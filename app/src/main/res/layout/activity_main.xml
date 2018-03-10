@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/black"
-        tools:context="it.redlor.popularmovies1.ui.MainActivity">
+        tools:context="it.redlor.popularmovie2.ui.MainActivity">
 
         <Spinner
             android:id="@+id/spinner"
