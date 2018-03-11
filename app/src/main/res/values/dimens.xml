@@ -20,7 +20,7 @@
     <dimen name="small_margin">8dp</dimen>
     <dimen name="view_margin">16dp</dimen>
     <dimen name="text_view_height">80dp</dimen>
-    <dimen name="text_size_big">22sp</dimen>
+    <dimen name="text_size_big">18sp</dimen>
     <dimen name="text_size_small">12sp</dimen>
     <dimen name="big_margin_tablet">64dp</dimen>
 
