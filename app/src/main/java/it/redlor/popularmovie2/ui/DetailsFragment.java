@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import it.redlor.popularmovie2.R;
 import it.redlor.popularmovie2.databinding.FragmentDetailsBinding;
 import it.redlor.popularmovie2.di.Injectable;
 import it.redlor.popularmovie2.pojos.ResultMovie;
+import it.redlor.popularmovie2.pojos.Review;
 import it.redlor.popularmovie2.pojos.Trailer;
 import it.redlor.popularmovie2.viewmodel.MovieViewModel;
 import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
@@ -42,12 +44,20 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
 
     MovieViewModel movieViewModel;
     TrailerAdapter trailerAdapter;
+    ReviewAdapter reviewAdapter;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         fragmentDetailsBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_details, container, false);
 
+        fragmentDetailsBinding.star.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
+                Toast.makeText(getContext(), getResources().getString(R.string.added_to_favourites), Toast.LENGTH_SHORT).show();
+            }
+        });
         return fragmentDetailsBinding.getRoot();
     }
 
@@ -62,6 +72,7 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         movieViewModel.setResultMovie(resultMovie);
         fragmentDetailsBinding.setVariable(BR.movieViewModel, movieViewModel);
         movieViewModel.getTrailers().observe(this, mTrailersList -> setTrailers(mTrailersList));
+        movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
 
         getActivity().setTitle(resultMovie.getTitle());
 
@@ -71,6 +82,12 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         fragmentDetailsBinding.trailersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         trailerAdapter = new TrailerAdapter(trailersList, this);
         fragmentDetailsBinding.trailersRecyclerView.setAdapter(trailerAdapter);
+    }
+
+    private void setReviews(List<Review> reviewList) {
+        fragmentDetailsBinding.reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        reviewAdapter = new ReviewAdapter(reviewList);
+        fragmentDetailsBinding.reviewsRecyclerView.setAdapter(reviewAdapter);
     }
 
     @Override

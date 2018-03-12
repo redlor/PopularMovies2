@@ -16,6 +16,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import it.redlor.popularmovie2.BuildConfig;
 import it.redlor.popularmovie2.pojos.ResultMovie;
+import it.redlor.popularmovie2.pojos.Review;
+import it.redlor.popularmovie2.pojos.ReviewsRoot;
 import it.redlor.popularmovie2.pojos.Trailer;
 import it.redlor.popularmovie2.pojos.VideosRoot;
 import it.redlor.popularmovie2.service.MoviesApiInterface;
@@ -32,6 +34,7 @@ public class MovieViewModel extends ViewModel {
     MutableLiveData<ResultMovie> resultMovie;
     private Application application;
     MutableLiveData<List<Trailer>> mTrailersList;
+    MutableLiveData<List<Review>> mReviewsList;
     MutableLiveData<Trailer> trailer;
 
     private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
@@ -43,7 +46,8 @@ public class MovieViewModel extends ViewModel {
         this.application = application;
         this.resultMovie = new MutableLiveData<>();
         this.trailer = new MutableLiveData<>();
-        mTrailersList = new MutableLiveData<>();
+        this.mTrailersList = new MutableLiveData<>();
+        this.mReviewsList = new MutableLiveData<>();
     }
 
     public ResultMovie getResultMovie() {
@@ -57,6 +61,11 @@ public class MovieViewModel extends ViewModel {
     public LiveData<List<Trailer>> getTrailers() {
         loadTrailers();
         return mTrailersList;
+    }
+
+    public LiveData<List<Review>> getReviews() {
+        loadReviews();
+        return mReviewsList;
     }
 
     private void loadTrailers() {
@@ -76,6 +85,31 @@ public class MovieViewModel extends ViewModel {
                     }
 
                 }));
+    }
+
+    private void loadReviews() {
+        mCompositeDisposable.add(mMoviesApiInterface.getReviews(
+                this.resultMovie.getValue().getId(), API_KEY)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+               .subscribe(new Consumer<ReviewsRoot>() {
+                   @Override
+                   public void accept(ReviewsRoot reviewsRoot) throws Exception {
+                       mReviewsList.setValue(new ArrayList<>());
+                       for (Review review : reviewsRoot.getReviews()) {
+                           if (reviewsRoot.getReviews() != null) {
+                               mReviewsList.getValue().add(review);
+                           }
+                       }
+                   }
+               })
+        );
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        mCompositeDisposable.clear();
     }
 
 }

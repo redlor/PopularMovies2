@@ -15,4 +15,5 @@
     <string name="release_date_label">Release Date</string>
     <string name="rating_label">Rating</string>
     <string name="reviews_label">Reviews: </string>
+    <string name="added_to_favourites">Added to Favourites</string>
 </resources>

@@ -19,7 +19,7 @@
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <ImageView
                 android:id="@+id/posterImageView"
@@ -44,17 +44,53 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/posterImageView">
 
+                <ImageView
+                    android:id="@+id/star"
+                    android:layout_width="50dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_star_outline_white_36dp"
+                    app:layout_constraintEnd_toStartOf="@+id/divider_2"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/rating_text_view" />
+
+               <!-- <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:text="@string/favourites_label"
+                    android:textColor="@color/text_color_details"
+                    android:textSize="@dimen/text_size_small"
+                    app:layout_constraintEnd_toEndOf="@+id/star"
+                    app:layout_constraintStart_toStartOf="@+id/star"
+                    app:layout_constraintTop_toBottomOf="@+id/star" />-->
+
+                <View
+                    android:id="@+id/divider_2"
+                    android:layout_width="1dp"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="#ccc"
+                    app:layout_constraintTop_toTopOf="@id/rating_text_view"
+                    app:layout_constraintBottom_toBottomOf="@+id/rating_label"
+                    app:layout_constraintEnd_toStartOf="@+id/rating_text_view"/>
+
                 <TextView
                     android:id="@+id/rating_text_view"
-                    android:layout_width="@dimen/text_view_height"
+                    android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@{String.valueOf(safeUnbox(movieViewModel.resultMovie.voteAverage))}"
                     android:textColor="@color/text_color_details"
                     android:textSize="@dimen/text_size_big"
-                    app:layout_constraintEnd_toStartOf="@+id/divider_1"
-                    app:layout_constraintTop_toTopOf="@+id/release_date_tv"
+                    app:layout_constraintBottom_toBottomOf="@+id/plot_synopsis_text_view"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.25"
                     tools:text="7.0" />
 
                 <TextView
@@ -72,30 +108,25 @@
                     android:id="@+id/divider_1"
                     android:layout_width="1dp"
                     android:layout_height="0dp"
-                    android:layout_marginEnd="@dimen/small_margin"
-                    android:layout_marginStart="@dimen/small_margin"
-                    android:layout_marginTop="@dimen/view_margin"
                     android:background="#ccc"
+                    android:layout_marginStart="16dp"
                     app:layout_constraintBottom_toBottomOf="@+id/release_date_label"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintStart_toEndOf="@+id/rating_text_view"
+                    app:layout_constraintTop_toTopOf= "@+id/rating_text_view" />
 
                 <TextView
                     android:id="@+id/release_date_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/small_margin"
-                    android:layout_marginStart="@dimen/small_margin"
+                    android:layout_marginStart="8dp"
                     android:gravity="center"
                     android:maxLines="1"
                     android:text="@{movieViewModel.resultMovie.releaseDate}"
                     android:textColor="@color/text_color_details"
                     android:textSize="@dimen/text_size_big"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/rating_text_view"
                     app:layout_constraintStart_toEndOf="@+id/divider_1"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.08"
+
                     tools:text="2018-10-10" />
 
                 <TextView
@@ -122,7 +153,7 @@
                     android:textSize="@dimen/text_size_small"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/divider_1"
+                    app:layout_constraintTop_toBottomOf="@+id/rating_label"
                     tools:text="Overview" />
 
 
@@ -147,6 +178,7 @@
                     app:layout_constraintTop_toBottomOf="@id/trailers_recycler_view"/>
 
                 <android.support.v7.widget.RecyclerView
+                    android:id="@+id/reviews_recycler_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"

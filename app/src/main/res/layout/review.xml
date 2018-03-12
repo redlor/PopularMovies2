@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="review"
+            type="it.redlor.popularmovie2.pojos.Review"/>
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/black"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin"
+            android:text="@{review.author}"
+            tools:text="Author"
+            android:textSize="@dimen/text_size_big"
+            android:textColor="@android:color/holo_red_light"
+            android:layout_marginStart="@dimen/margin" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/margin"
+            android:textColor="@color/text_color_details"
+            android:textStyle="italic"
+            tools:text="Amazing Movie!"
+            android:text="@{review.content}"
+            android:layout_marginStart="@dimen/margin" />
+    </LinearLayout>
+
+</layout>
