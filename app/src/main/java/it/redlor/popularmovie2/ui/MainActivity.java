@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     @Inject
     ViewModelFactory mViewModelFactory;
 
-    // Method to dinamically calclate hoe many colums should be shown
+    // Method to dynamically calculate how many columns should be shown
     private static int calculateNoOfColumns(Context context) {
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                     case 0:
                         if (internetAvailable()) {
                             setOnlineUI();
-                            mViewModel.getMostPopularMoviesList().observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+                            mViewModel.getMostPopularMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
                         } else {
                             setOfflineUI();
                         }
@@ -95,10 +95,16 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                     case 1:
                         if (internetAvailable()) {
                             setOnlineUI();
-                            mViewModel.getTopRatedMoviesList().observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+                            mViewModel.getTopRatedMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
                         } else {
                             setOfflineUI();
                         }
+                        break;
+                    case 2:
+                        setOnlineUI();
+                        mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+
+                        break;
                 }
             }
 
@@ -141,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     }
 
     private void setOfflineUI() {
-        mActivityMainBinding.spinner.setVisibility(View.GONE);
         mActivityMainBinding.moviesRv.setVisibility(View.GONE);
         mActivityMainBinding.noInternetImage.setVisibility(View.VISIBLE);
         mActivityMainBinding.noInternetText.setVisibility(View.VISIBLE);
@@ -169,9 +174,11 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         } else {
             Intent intent = new Intent(this, DetailsActivity.class);
             intent.putExtra(CLICKED_MOVIE, resultMovie);
+            System.out.println(resultMovie.toString());
             startActivity(intent);
         }
     }
+
 
     @Override
     public AndroidInjector<Fragment> supportFragmentInjector() {

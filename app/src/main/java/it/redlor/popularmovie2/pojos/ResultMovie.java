@@ -21,6 +21,9 @@ public class ResultMovie implements Parcelable {
             return new ResultMovie[size];
         }
     };
+
+    boolean favourite;
+
     @SerializedName("vote_count")
     @Expose
     private Integer voteCount;
@@ -64,6 +67,9 @@ public class ResultMovie implements Parcelable {
     @Expose
     private String releaseDate;
 
+    public ResultMovie() {
+    }
+
     public ResultMovie(int id, String title, String posterPath, String releaseDate, double voteAverage, String overview) {
         this.id = id;
         this.title = title;
@@ -80,6 +86,15 @@ public class ResultMovie implements Parcelable {
         releaseDate = in.readString();
         voteAverage = in.readDouble();
         overview = in.readString();
+        favourite = in.readByte() != 0;
+    }
+
+    public boolean isFavourite() {
+        return favourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
     }
 
     public Integer getVoteCount() {
@@ -208,6 +223,7 @@ public class ResultMovie implements Parcelable {
         parcel.writeString(this.releaseDate);
         parcel.writeDouble(this.voteAverage);
         parcel.writeString(this.overview);
+        parcel.writeByte((byte) (this.favourite ? 1 :0));
     }
 
     @Override
@@ -218,6 +234,7 @@ public class ResultMovie implements Parcelable {
                 ", date='" + releaseDate + '\'' +
                 ", poster='" + posterPath + '\'' +
                 ", vote='" + voteAverage + '\'' +
+                ", favourite='" + favourite + '\'' +
                 '}';
     }
 }

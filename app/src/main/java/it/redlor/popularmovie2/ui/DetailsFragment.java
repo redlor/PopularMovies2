@@ -12,7 +12,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import java.util.List;
 
@@ -51,13 +50,7 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         fragmentDetailsBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_details, container, false);
 
-        fragmentDetailsBinding.star.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
-                Toast.makeText(getContext(), getResources().getString(R.string.added_to_favourites), Toast.LENGTH_SHORT).show();
-            }
-        });
+
         return fragmentDetailsBinding.getRoot();
     }
 
@@ -73,7 +66,25 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         fragmentDetailsBinding.setVariable(BR.movieViewModel, movieViewModel);
         movieViewModel.getTrailers().observe(this, mTrailersList -> setTrailers(mTrailersList));
         movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
-
+        movieViewModel.getFavourite().observe(this, favourite -> {
+            if (favourite) {
+                fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
+            } else {
+                fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
+            }
+        });
+        fragmentDetailsBinding.star.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (resultMovie.isFavourite()) {
+                    movieViewModel.removeFavourite(getActivity().getContentResolver());
+                    fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
+                } else {
+                    movieViewModel.addFavourite(getActivity().getContentResolver());
+                    fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
+                }
+            }
+        });
         getActivity().setTitle(resultMovie.getTitle());
 
     }

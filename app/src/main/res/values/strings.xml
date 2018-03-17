@@ -5,6 +5,7 @@
     <string-array name="sort_movies">
         <item>Most Popular</item>
         <item>Top Rated</item>
+        <item>Favourites</item>
     </string-array>
 
     <!-- No Internet connection -->

@@ -29,8 +29,13 @@
 
         <activity android:name="it.redlor.popularmovie2.ui.DetailsActivity"
             android:parentActivityName="it.redlor.popularmovie2.ui.MainActivity">
-
         </activity>
+
+        <provider
+            android:authorities="it.redlor.popularmovie2"
+            android:name=".database.MoviesContentProvider">
+
+        </provider>
     </application>
 
 </manifest>
