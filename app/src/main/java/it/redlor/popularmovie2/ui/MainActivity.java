@@ -160,22 +160,26 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     @Override
     public void onClick(ResultMovie resultMovie) {
         //If on a tablet, load the fragment in dual pane
-        if (mTwoPane) {
-            FragmentManager fragmentManager = this.getSupportFragmentManager();
-            DetailsFragment detailsFragment = new DetailsFragment();
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(CLICKED_MOVIE, resultMovie);
-            detailsFragment.setArguments(bundle);
+        if (internetAvailable() | resultMovie.isFavourite()) {
+            if (mTwoPane) {
+                FragmentManager fragmentManager = this.getSupportFragmentManager();
+                DetailsFragment detailsFragment = new DetailsFragment();
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(CLICKED_MOVIE, resultMovie);
+                detailsFragment.setArguments(bundle);
 
-            fragmentManager.beginTransaction()
-                    .replace(R.id.details_container, detailsFragment)
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                    .commit();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.details_container, detailsFragment)
+                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                        .commit();
+            } else {
+                Intent intent = new Intent(this, DetailsActivity.class);
+                intent.putExtra(CLICKED_MOVIE, resultMovie);
+                System.out.println(resultMovie.toString());
+                startActivity(intent);
+            }
         } else {
-            Intent intent = new Intent(this, DetailsActivity.class);
-            intent.putExtra(CLICKED_MOVIE, resultMovie);
-            System.out.println(resultMovie.toString());
-            startActivity(intent);
+            setOfflineUI();
         }
     }
 

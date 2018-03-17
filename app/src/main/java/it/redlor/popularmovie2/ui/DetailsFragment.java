@@ -2,8 +2,11 @@ package it.redlor.popularmovie2.ui;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -64,8 +67,12 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         movieViewModel = ViewModelProviders.of(this, viewModelFactory).get(MovieViewModel.class);
         movieViewModel.setResultMovie(resultMovie);
         fragmentDetailsBinding.setVariable(BR.movieViewModel, movieViewModel);
-        movieViewModel.getTrailers().observe(this, mTrailersList -> setTrailers(mTrailersList));
-        movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
+
+        if (internetAvailable()) {
+            movieViewModel.getTrailers().observe(this, mTrailersList -> setTrailers(mTrailersList));
+            movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
+            fragmentDetailsBinding.reviewsLabelTv.setVisibility(View.VISIBLE);
+        }
         movieViewModel.getFavourite().observe(this, favourite -> {
             if (favourite) {
                 fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
@@ -111,5 +118,18 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         } catch (ActivityNotFoundException ex) {
             this.startActivity(webIntent);
         }
+    }
+
+    public boolean internetAvailable() {
+        // Get a reference to the ConnectivityManager to check state of network connectivity
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        // Get details on the currently active default data network
+        NetworkInfo networkInfo = null;
+        if (connectivityManager != null) {
+            networkInfo = connectivityManager.getActiveNetworkInfo();
+        }
+
+        return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 }
