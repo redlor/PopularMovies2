@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="movieViewModel"
             type="it.redlor.popularmovie2.viewmodel.MovieViewModel" />

@@ -30,7 +30,7 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
-            card_view:cardBackgroundColor="@android:color/transparent"
+            card_view:cardBackgroundColor="@android:color/black"
             card_view:cardCornerRadius="@dimen/cornerRadius"
             card_view:cardElevation="0dp">
 

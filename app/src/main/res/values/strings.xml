@@ -10,7 +10,6 @@
     </string-array>
 
     <!-- Empty state -->
-    <string name="credit_wifi_icon">https://www.flaticon.com/authors/kirill-kazachek</string>
     <string name="no_internet">No Internet connection</string>
     <string name="new_search">Make a new search!</string>
     <string name="no_favourites">Add some Favourite Movies!</string>
@@ -24,4 +23,14 @@
     <string name="about_item">About</string>
     <string name="search_hint">Insert your movie</string>
 
+    <!-- Activity About -->
+    <string name="app_version">1.0</string>
+    <string name="author">Author: Lorenzo Redaelli aka Redlor</string>
+    <string name="contact_me">You can contact me at:</string>
+    <string name="support_me">Support me at:</string>
+    <string name="github_redlor" translatable="false">github.com/redlor</string>
+    <string name="paypal_redlor" translatable="false">paypal.me/redlor</string>
+    <string name="credits">Credits:</string>
+    <string name="emoji_credit">Emoji artwork provided by EmojiOne: http://emojione.com</string>
+    <string name="credit_wifi_icon">https://www.flaticon.com/authors/kirill-kazachek</string>
 </resources>

@@ -6,8 +6,6 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
-import it.redlor.popularmovie2.R;
-
 /**
  * Utility to bind the image to the ImageView using Picasso
  */
@@ -25,7 +23,7 @@ public class ImageBindingAdapter {
                 .build();
         Picasso.with(imageView.getContext())
                 .load(uri.toString())
-                .placeholder(R.drawable.clapper_board)
+         //       .placeholder(R.drawable.clapper_board)
                 .into(imageView);
     }
 }

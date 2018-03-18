@@ -25,4 +25,9 @@
     <dimen name="text_size_small">12sp</dimen>
     <dimen name="big_margin_tablet">64dp</dimen>
 
+    <!-- Activity About -->
+    <dimen name="height_links">27dp</dimen>
+    <dimen name="height_hyperlinks_long">50dp</dimen>
+
+
 </resources>

@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -20,9 +23,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -35,6 +42,8 @@ import it.redlor.popularmovie2.databinding.ActivityMainBinding;
 import it.redlor.popularmovie2.pojos.ResultMovie;
 import it.redlor.popularmovie2.viewmodel.MoviesListViewModel;
 import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
+
+
 
 public class MainActivity extends AppCompatActivity implements MovieClickCallback, HasSupportFragmentInjector {
 
@@ -51,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     ViewModelFactory mViewModelFactory;
 
     String mQuery;
+    List<String> mSpinnerlist;
 
     // Method to dynamically calculate how many columns should be shown
     private static int calculateNoOfColumns(Context context) {
@@ -78,11 +88,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         } else {
             setOfflineUI();
         }
-/*
-        if (savedInstanceState != null && mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
-            mQuery = savedInstanceState.getString("query");
-            System.out.println(mQuery);
-        }*/
 
         mViewModel = ViewModelProviders.of(this, mViewModelFactory)
                 .get(MoviesListViewModel.class);
@@ -90,9 +95,34 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         Intent returnFromDetailsIntent = getIntent();
         String returnedQuery = returnFromDetailsIntent.getStringExtra("query");
         System.out.println("returned query" + returnedQuery);
-        ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(this, R.array.sort_movies,
-                android.R.layout.simple_spinner_dropdown_item);
+
+        mSpinnerlist = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sort_movies)));
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, mSpinnerlist) {
+            @Override
+            public boolean isEnabled(int position) {
+                if (position == 3) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            @Override
+            public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View spinnerview = super.getDropDownView(position, convertView, parent);
+                TextView spinnertextview = (TextView) spinnerview;
+                if(position == 3) {
+                    //Set the disable spinner item color fade .
+                    spinnertextview.setTextColor(Color.parseColor("#bcbcbb"));
+                }
+                else {
+                    spinnertextview.setTextColor(Color.BLACK);
+                }
+                return spinnerview;
+            }
+        };
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
         mActivityMainBinding.spinner.setAdapter(arrayAdapter);
 
         SharedPreferences sharedPreferences = getPreferences(0);
@@ -136,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                                     } else {
                                         setOnlineUI();
                                         processResponse(mMoviesList);
-
                                     }
                         });
                         retainSortOrder();
@@ -148,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                                 setOfflineUI();
                             } else {
                                 searchMovie(mQuery);
+                                setOnlineUI();
                             }
                         } else {
                             setOfflineUI();
@@ -218,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         //If on a tablet, load the fragment in dual pane
         if (internetAvailable() | resultMovie.isFavourite()) {
             if (mTwoPane) {
-                FragmentManager fragmentManager = this.getSupportFragmentManager();
+                FragmentManager fragmentManager = getSupportFragmentManager();
                 DetailsFragment detailsFragment = new DetailsFragment();
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(CLICKED_MOVIE, resultMovie);
@@ -228,12 +258,11 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                         .replace(R.id.details_container, detailsFragment)
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                         .commit();
+
             } else {
                 Intent intent = new Intent(this, DetailsActivity.class);
                 intent.putExtra("search", mQuery);
-                System.out.println("query main passing: " + mQuery);
                 intent.putExtra(CLICKED_MOVIE, resultMovie);
-                System.out.println(resultMovie.toString());
                 startActivity(intent);
             }
         } else {
@@ -280,6 +309,8 @@ private void retainSortOrder() {
 
         switch (id) {
             case R.id.about_menu_item:
+                Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+                startActivity(aboutIntent);
                 return true;
         }
 

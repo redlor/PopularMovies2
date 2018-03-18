@@ -67,14 +67,14 @@ public class DetailsActivity extends AppCompatActivity implements HasSupportFrag
 
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (internetAvailable()) {
+                onBackPressed();
+                return true;
+                /*if (internetAvailable()) {
                     Intent returnIntent = new Intent(DetailsActivity.this, MainActivity.class);
                     returnIntent.putExtra("query", mQuery);
                     startActivity(returnIntent);
                     return true;
-                } else {
-
-                }
+                } */
             default:
                 return super.onOptionsItemSelected(item);
         }
