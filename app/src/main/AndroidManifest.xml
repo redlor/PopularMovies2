@@ -25,6 +25,11 @@
         </activity>
 
         <activity android:name="it.redlor.popularmovie2.ui.MainActivity">
+            <meta-data android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
         </activity>
 
         <activity android:name="it.redlor.popularmovie2.ui.DetailsActivity"

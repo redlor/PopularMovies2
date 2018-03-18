@@ -23,7 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module
 public class ApiClientModule {
-    private static final String BASE_URL = "https://api.themoviedb.org/3/movie/";
+    private static final String BASE_URL = "https://api.themoviedb.org/3/";
 
 
     @Provides

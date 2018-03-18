@@ -38,6 +38,8 @@ import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
 public class DetailsFragment extends Fragment implements Injectable, VideoClickCallback {
 
     private static final String CLICKED_MOVIE = "clicked_movie";
+    private static final String PATH_YOUTUBE_APP = "vnd.youtube:";
+    private static final String PATH_YOUTUBE_WEB = "http://www.youtube.com/watch?v=";
 
     FragmentDetailsBinding fragmentDetailsBinding;
 
@@ -110,9 +112,9 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
 
     @Override
     public void openTrailer(String key) {
-        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + key));
+        Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(PATH_YOUTUBE_APP + key));
         Intent webIntent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://www.youtube.com/watch?v=" + key));
+                Uri.parse(PATH_YOUTUBE_WEB + key));
         try {
             this.startActivity(appIntent);
         } catch (ActivityNotFoundException ex) {

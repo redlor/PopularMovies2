@@ -15,16 +15,21 @@ import retrofit2.http.Query;
 public interface MoviesApiInterface {
 
     // Customize the Url request
-    @GET("popular")
+    @GET("movie/popular")
     Observable<Root> getRepository(@Query("api_key") String apiKey);
 
-    @GET("top_rated")
+    @GET("movie/top_rated")
     Observable<Root> getTopRatedRepo(@Query("api_key") String apiKey);
 
     // Url requests for trailers and reviews
-    @GET("{id}/videos")
+    @GET("movie/{id}/videos")
     Observable<VideosRoot> getVideos(@Path("id") int movieId, @Query("api_key") String apiKey);
 
-    @GET("{id}/reviews")
+    @GET("movie/{id}/reviews")
     Observable<ReviewsRoot> getReviews(@Path("id") int movieId, @Query("api_key") String apiKey);
+
+    @GET("search/movie")
+    Observable<Root> getSearchedMovie(@Query("api_key") String apiKey, @Query("query") String movieName);
 }
+
+// https://api.themoviedb.org/3/search/movie?api_key=###&query=tron

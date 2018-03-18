@@ -3,6 +3,7 @@ package it.redlor.popularmovie2.ui;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
@@ -13,7 +14,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.SearchView;
 import android.util.DisplayMetrics;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -34,6 +39,7 @@ import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
 public class MainActivity extends AppCompatActivity implements MovieClickCallback, HasSupportFragmentInjector {
 
     private static final String CLICKED_MOVIE = "clicked_movie";
+    private static final String SPINNER_SELECTION = "spinnerSelection";
     // Declare a variable to check if in Dual Pane mode
     public static boolean mTwoPane;
     MovieRecyclerAdapter mAdapter;
@@ -43,6 +49,8 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
     @Inject
     ViewModelFactory mViewModelFactory;
+
+    String mQuery;
 
     // Method to dynamically calculate how many columns should be shown
     private static int calculateNoOfColumns(Context context) {
@@ -57,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         super.onCreate(savedInstanceState);
 
         mActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-
         mActivityMainBinding.loadingIndicator.setVisibility(View.VISIBLE);
 
         // Check if on a tablet
@@ -71,14 +78,31 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         } else {
             setOfflineUI();
         }
+/*
+        if (savedInstanceState != null && mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
+            mQuery = savedInstanceState.getString("query");
+            System.out.println(mQuery);
+        }*/
 
         mViewModel = ViewModelProviders.of(this, mViewModelFactory)
                 .get(MoviesListViewModel.class);
 
+        Intent returnFromDetailsIntent = getIntent();
+        String returnedQuery = returnFromDetailsIntent.getStringExtra("query");
+        System.out.println("returned query" + returnedQuery);
         ArrayAdapter arrayAdapter = ArrayAdapter.createFromResource(this, R.array.sort_movies,
                 android.R.layout.simple_spinner_dropdown_item);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mActivityMainBinding.spinner.setAdapter(arrayAdapter);
+
+        SharedPreferences sharedPreferences = getPreferences(0);
+        mActivityMainBinding.spinner.setSelection(sharedPreferences.getInt(SPINNER_SELECTION, 0));
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3 && returnedQuery != null) {
+            searchMovie(returnedQuery);
+        } else {
+            setOfflineUI();
+
+        }
 
         mActivityMainBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -87,23 +111,47 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                     case 0:
                         if (internetAvailable()) {
                             setOnlineUI();
-                            mViewModel.getMostPopularMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+                            mViewModel.getMostPopularMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList ->
+                                    processResponse(mMoviesList));
                         } else {
                             setOfflineUI();
                         }
+                        retainSortOrder();
+
                         break;
                     case 1:
                         if (internetAvailable()) {
                             setOnlineUI();
-                            mViewModel.getTopRatedMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+                            mViewModel.getTopRatedMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList ->
+                                    processResponse(mMoviesList));
                         } else {
                             setOfflineUI();
                         }
+                        retainSortOrder();
                         break;
                     case 2:
-                        setOnlineUI();
-                        mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+                        mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> {
+                                    if (mMoviesList.size() == 0 && mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
+                                         setOfflineUI();
+                                    } else {
+                                        setOnlineUI();
+                                        processResponse(mMoviesList);
 
+                                    }
+                        });
+                        retainSortOrder();
+                        break;
+                    case 3:
+                        if (internetAvailable()) {
+                            retainSortOrder();
+                            if (mQuery == null) {
+                                setOfflineUI();
+                            } else {
+                                searchMovie(mQuery);
+                            }
+                        } else {
+                            setOfflineUI();
+                        }
                         break;
                 }
             }
@@ -112,8 +160,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
-
-
     }
 
     // Method to set the data from the ViewModel in the RecyclerView
@@ -148,10 +194,20 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
 
     private void setOfflineUI() {
         mActivityMainBinding.moviesRv.setVisibility(View.GONE);
+        mActivityMainBinding.loadingIndicator.setVisibility(View.GONE);
         mActivityMainBinding.noInternetImage.setVisibility(View.VISIBLE);
         mActivityMainBinding.noInternetText.setVisibility(View.VISIBLE);
-        mActivityMainBinding.loadingIndicator.setVisibility(View.GONE);
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3 && internetAvailable()) {
+            mActivityMainBinding.noInternetImage.setImageResource(R.drawable.ic_magnify_white_24dp);
+            mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.new_search));
+        } else if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2){
+            mActivityMainBinding.noInternetImage.setVisibility(View.INVISIBLE);
+            mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.no_favourites));
+        } else {
+            mActivityMainBinding.noInternetImage.setImageResource(R.drawable.wifi);
+            mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.no_internet));
+        }
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE | mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
             mActivityMainBinding.noInternetImage.getLayoutParams().height = 256;
             mActivityMainBinding.noInternetImage.getLayoutParams().width = 256;
         }
@@ -174,6 +230,8 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                         .commit();
             } else {
                 Intent intent = new Intent(this, DetailsActivity.class);
+                intent.putExtra("search", mQuery);
+                System.out.println("query main passing: " + mQuery);
                 intent.putExtra(CLICKED_MOVIE, resultMovie);
                 System.out.println(resultMovie.toString());
                 startActivity(intent);
@@ -183,6 +241,55 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         }
     }
 
+private void retainSortOrder() {
+        SharedPreferences.Editor editor = getPreferences(0).edit();
+        int sortOrder = mActivityMainBinding.spinner.getSelectedItemPosition();
+        editor.putInt(SPINNER_SELECTION, sortOrder);
+        editor.apply();
+}
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.search_item);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                mQuery = query;
+                System.out.println("query main: " + mQuery);
+                searchMovie(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.about_menu_item:
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void searchMovie(String query) {
+        mActivityMainBinding.spinner.setSelection(3);
+        mViewModel.getSearchedMovie(getContentResolver(), query).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+    }
 
     @Override
     public AndroidInjector<Fragment> supportFragmentInjector() {

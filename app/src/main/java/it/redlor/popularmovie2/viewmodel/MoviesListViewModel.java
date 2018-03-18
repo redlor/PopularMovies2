@@ -63,6 +63,12 @@ public class MoviesListViewModel extends ViewModel {
         loadFavourites(contentResolver);
         return mMoviesList;
     }
+
+    public LiveData<List<ResultMovie>> getSearchedMovie(ContentResolver contentResolver, String query) {
+        loadSearchedMovie(contentResolver, query);
+        return mMoviesList;
+    }
+
     public void setMoviesList(MutableLiveData<List<ResultMovie>> mMoviesList) {
         this.mMoviesList = mMoviesList;
     }
@@ -172,8 +178,25 @@ public class MoviesListViewModel extends ViewModel {
             } else {
                 resultMovie.setFavourite(false);
             }
-
     }
+
+private void loadSearchedMovie(ContentResolver contentResolver, String query) {
+    mCompositeDisposable.add((Disposable) mMoviesApiInterface.getSearchedMovie(API_KEY, query)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(new Consumer<Root>() {
+                @Override
+                public void accept(Root root) throws Exception {
+                    mMoviesList.setValue(new ArrayList<>());
+                    for (ResultMovie resultMovie : root.getResults()) {
+                        if (root.getResults() != null) {
+                            mMoviesList.getValue().add(resultMovie);
+                            checkFavouriteStatus(resultMovie, contentResolver);
+                        }
+                    }
+                }
+            }));
+}
 
     @Override
     protected void onCleared() {
