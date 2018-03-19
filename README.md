@@ -3,7 +3,7 @@
 ## About 
 Project 3 Udacity Android Developer Nandegree. The App queries TheMovieDb API to retrieve data using Retrofit.
 To create this app, I applied Architecture Components: MVVM, Dependency Injection with Dagger 2, LiveData, DataBinding.
-In addition, I added an animation when the RecyclerView is scrolled up and down and implemented a Dual Pane version for tablets.
+In addition, I added an animation when the RecyclerView is scrolled up and down and implemented a Dual Pane version for tablets. It uses https://www.themoviedb.org for retrieve Movies.
 
 **Features:**
 
