@@ -18,7 +18,7 @@ In addition, I added an animation when the RecyclerView is scrolled up and down 
 https://youtu.be/i0fxP6C8zi8
 
 ## Screenshots
-<img src="./Screenshots/movies1popularport.png" alt="Drawing" width="200px"/> <img src="./Screenshots/movies1topratedport.png" alt="Drawing" width="200px"/> <img src="./Screenshots/detailsport.png" alt="Drawing" width="200px"/> <img src="./Screenshots/movies2tablet.png" alt="Drawing" width="400px"/>
+<img src="./Screenshots/movies1popularport.png" alt="Drawing" width="200px"/> <img src="./Screenshots/movies1topratedport.png" alt="Drawing" width="200px"/>  <img src="./Screenshots/detailsport.png" alt="Drawing" width="200px"/> <img src="./Screenshots/movies2tablet.png" alt="Drawing" width="400px"/><img src="./Screenshots/movies2tablet2.png" alt="Drawing" width="400px"/>
 
 License
 -------
