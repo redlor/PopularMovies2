@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="it.redlor.popularmovies1">
+    package="it.redlor.popularmovie2">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
-        android:name=".MoviesApp"
+        android:name="it.redlor.popularmovie2.MoviesApp"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.SplashScreenActivity"
+            android:name="it.redlor.popularmovie2.ui.SplashScreenActivity"
             android:theme="@style/SplashTheme">
 
             <intent-filter>
@@ -24,13 +24,27 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.MainActivity">
+        <activity android:name="it.redlor.popularmovie2.ui.MainActivity">
+            <meta-data android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
         </activity>
 
-        <activity android:name=".ui.DetailsActivity"
+        <activity android:name="it.redlor.popularmovie2.ui.DetailsActivity"
+            android:parentActivityName="it.redlor.popularmovie2.ui.MainActivity">
+        </activity>
+
+        <activity android:name=".ui.AboutActivity"
             android:parentActivityName=".ui.MainActivity">
-
         </activity>
+
+        <provider
+            android:authorities="it.redlor.popularmovie2"
+            android:name=".database.MoviesContentProvider">
+
+        </provider>
     </application>
 
 </manifest>

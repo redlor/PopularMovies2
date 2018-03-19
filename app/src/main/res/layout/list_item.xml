@@ -6,11 +6,11 @@
 
         <variable
             name="viewModel"
-            type="it.redlor.popularmovies1.pojos.ResultMovie" />
+            type="it.redlor.popularmovie2.pojos.ResultMovie" />
 
         <variable
             name="callback"
-            type="it.redlor.popularmovies1.ui.MovieClickCallback" />
+            type="it.redlor.popularmovie2.ui.callbacks.MovieClickCallback" />
     </data>
 
     <LinearLayout
@@ -30,7 +30,7 @@
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
-            card_view:cardBackgroundColor="@android:color/transparent"
+            card_view:cardBackgroundColor="@android:color/black"
             card_view:cardCornerRadius="@dimen/cornerRadius"
             card_view:cardElevation="0dp">
 

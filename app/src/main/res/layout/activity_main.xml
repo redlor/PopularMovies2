@@ -6,7 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/black"
-        tools:context="it.redlor.popularmovies1.ui.MainActivity">
+        tools:context="it.redlor.popularmovie2.ui.MainActivity">
 
         <Spinner
             android:id="@+id/spinner"
@@ -17,7 +17,7 @@
             android:prompt="@string/app_name"
             android:spinnerMode="dropdown"
             android:visibility="visible"
-            tools:entries="@array/sort_movies"></Spinner>
+            tools:entries="@array/sort_movies" />
 
         <ImageView
             android:id="@+id/no_internet_image"
@@ -32,11 +32,11 @@
 
         <TextView
             android:id="@+id/no_internet_text"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/no_internet_image"
-            android:layout_gravity="center"
             android:layout_marginTop="@dimen/margin"
+            android:gravity="center"
             android:text="@string/no_internet"
             android:textColor="@android:color/white"
             android:textSize="@dimen/no_internet_text"
