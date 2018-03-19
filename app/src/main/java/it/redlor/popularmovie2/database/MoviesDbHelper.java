@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import it.redlor.popularmovie2.database.MoviesContract.FavouritesMoviesEntry;
 
 /**
- * Created by Hp on 12/03/2018.
+ * Helper for the Db, creates the SQLite table
  */
 
 public class MoviesDbHelper extends SQLiteOpenHelper {

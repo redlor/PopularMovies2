@@ -39,13 +39,11 @@ public class MovieViewModel extends ViewModel {
     private static final String API_KEY = BuildConfig.API_KEY;
 
     MutableLiveData<ResultMovie> resultMovie;
-    private Application application;
     MutableLiveData<List<Trailer>> mTrailersList;
     MutableLiveData<List<Review>> mReviewsList;
     MutableLiveData<Trailer> trailer;
     MutableLiveData<Boolean> favourite;
-
-
+    private Application application;
     private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
     private MoviesApiInterface mMoviesApiInterface;
 
@@ -113,20 +111,21 @@ public class MovieViewModel extends ViewModel {
                 this.resultMovie.getValue().getId(), API_KEY)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-               .subscribe(new Consumer<ReviewsRoot>() {
-                   @Override
-                   public void accept(ReviewsRoot reviewsRoot) throws Exception {
-                       mReviewsList.setValue(new ArrayList<>());
-                       for (Review review : reviewsRoot.getReviews()) {
-                           if (reviewsRoot.getReviews() != null) {
-                               mReviewsList.getValue().add(review);
-                           }
-                       }
-                   }
-               })
+                .subscribe(new Consumer<ReviewsRoot>() {
+                    @Override
+                    public void accept(ReviewsRoot reviewsRoot) throws Exception {
+                        mReviewsList.setValue(new ArrayList<>());
+                        for (Review review : reviewsRoot.getReviews()) {
+                            if (reviewsRoot.getReviews() != null) {
+                                mReviewsList.getValue().add(review);
+                            }
+                        }
+                    }
+                })
         );
     }
 
+    // Builds ContentValues
     private ContentValues createContentValues() {
         ContentValues contentValues = new ContentValues();
         contentValues.put(FavouritesMoviesEntry._ID, getResultMovie().getId());
@@ -144,54 +143,54 @@ public class MovieViewModel extends ViewModel {
             Uri uri = contentResolver
                     .insert(FavouritesMoviesEntry.CONTENT_URI,
                             createContentValues());
-                        if (!emitter.isDisposed()) {
-                            emitter.onSuccess(uri);
+            if (!emitter.isDisposed()) {
+                emitter.onSuccess(uri);
             }
         })
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(new DisposableSingleObserver<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            if (uri != null) {
-                                setFavourite(true);
-                            }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        if (uri != null) {
+                            setFavourite(true);
                         }
-
-                        @Override
-                        public void onError(Throwable e) {
-
-                        }
-                    }));
-        }
-
-public void removeFavourite(ContentResolver contentResolver) {
-    String id = Integer.toString(getResultMovie().getId());
-    final Uri uri = FavouritesMoviesEntry.CONTENT_URI
-            .buildUpon()
-            .appendPath(id)
-            .build();
-
-    mCompositeDisposable.add(Single.create((SingleEmitter<Integer> emitter) -> {
-        int deletedMovie = contentResolver.delete(uri, null, null);
-        if(!emitter.isDisposed()) {
-            emitter.onSuccess(deletedMovie);
-        }
-            })
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(new DisposableSingleObserver<Integer>() {
-                @Override
-                public void onSuccess(Integer integer) {
-                    if (integer > 0) {
-                        setFavourite(false);
                     }
-                }
 
-                @Override
-                public void onError(Throwable e) {
+                    @Override
+                    public void onError(Throwable e) {
 
-                }
-            }));
-}
+                    }
+                }));
+    }
+
+    public void removeFavourite(ContentResolver contentResolver) {
+        String id = Integer.toString(getResultMovie().getId());
+        final Uri uri = FavouritesMoviesEntry.CONTENT_URI
+                .buildUpon()
+                .appendPath(id)
+                .build();
+
+        mCompositeDisposable.add(Single.create((SingleEmitter<Integer> emitter) -> {
+            int deletedMovie = contentResolver.delete(uri, null, null);
+            if (!emitter.isDisposed()) {
+                emitter.onSuccess(deletedMovie);
+            }
+        })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Integer>() {
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        if (integer > 0) {
+                            setFavourite(false);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                }));
+    }
 
     @Override
     protected void onCleared() {

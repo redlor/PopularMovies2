@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#757575</color>
     <color name="colorAccent">#FF4081</color>
 
+    <color name="inactive_spinner_item">#bcbcbb</color>
+
     <!-- Details -->
     <color name="text_color_details">#FFFFFF</color>
     <color name="star_color">#FFEB3B</color>

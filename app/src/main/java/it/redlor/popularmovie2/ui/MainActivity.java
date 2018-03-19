@@ -40,15 +40,17 @@ import dagger.android.support.HasSupportFragmentInjector;
 import it.redlor.popularmovie2.R;
 import it.redlor.popularmovie2.databinding.ActivityMainBinding;
 import it.redlor.popularmovie2.pojos.ResultMovie;
+import it.redlor.popularmovie2.ui.adapters.MovieRecyclerAdapter;
+import it.redlor.popularmovie2.ui.callbacks.MovieClickCallback;
 import it.redlor.popularmovie2.viewmodel.MoviesListViewModel;
 import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
-
 
 
 public class MainActivity extends AppCompatActivity implements MovieClickCallback, HasSupportFragmentInjector {
 
     private static final String CLICKED_MOVIE = "clicked_movie";
     private static final String SPINNER_SELECTION = "spinnerSelection";
+
     // Declare a variable to check if in Dual Pane mode
     public static boolean mTwoPane;
     MovieRecyclerAdapter mAdapter;
@@ -59,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     @Inject
     ViewModelFactory mViewModelFactory;
 
-    String mQuery;
     List<String> mSpinnerlist;
 
     // Method to dynamically calculate how many columns should be shown
@@ -92,14 +93,12 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         mViewModel = ViewModelProviders.of(this, mViewModelFactory)
                 .get(MoviesListViewModel.class);
 
-        Intent returnFromDetailsIntent = getIntent();
-        String returnedQuery = returnFromDetailsIntent.getStringExtra("query");
-        System.out.println("returned query" + returnedQuery);
-
+        // Initialize Spinner
         mSpinnerlist = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sort_movies)));
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, mSpinnerlist) {
             @Override
             public boolean isEnabled(int position) {
+                // Disable Search Mode option since it is not intended to be clicked
                 if (position == 3) {
                     return false;
                 } else {
@@ -109,31 +108,30 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
 
             @Override
             public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View spinnerview = super.getDropDownView(position, convertView, parent);
-                TextView spinnertextview = (TextView) spinnerview;
-                if(position == 3) {
-                    //Set the disable spinner item color fade .
-                    spinnertextview.setTextColor(Color.parseColor("#bcbcbb"));
+                View spinnerView = super.getDropDownView(position, convertView, parent);
+                TextView spinnerTextView = (TextView) spinnerView;
+                if (position == 3) {
+                    //Set the disabled spinner item color fade .
+                    spinnerTextView.setTextColor(getResources().getColor(R.color.inactive_spinner_item));
+                } else {
+                    spinnerTextView.setTextColor(Color.BLACK);
                 }
-                else {
-                    spinnertextview.setTextColor(Color.BLACK);
-                }
-                return spinnerview;
+                return spinnerView;
             }
         };
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         mActivityMainBinding.spinner.setAdapter(arrayAdapter);
 
+        // Use Shared preferences to retain the sort order when coming back from Details Activity
         SharedPreferences sharedPreferences = getPreferences(0);
         mActivityMainBinding.spinner.setSelection(sharedPreferences.getInt(SPINNER_SELECTION, 0));
-        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3 && returnedQuery != null) {
-            searchMovie(returnedQuery);
-        } else {
-            setOfflineUI();
-
+        // If the last visited tab was Search Mode, with this check we open the firt tab when launching the app
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
+            mActivityMainBinding.spinner.setSelection(0);
         }
 
+        // Defining the spinner items behavior
         mActivityMainBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -160,28 +158,8 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                         retainSortOrder();
                         break;
                     case 2:
-                        mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> {
-                                    if (mMoviesList.size() == 0 && mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
-                                         setOfflineUI();
-                                    } else {
-                                        setOnlineUI();
-                                        processResponse(mMoviesList);
-                                    }
-                        });
+                      refreshFavourites();
                         retainSortOrder();
-                        break;
-                    case 3:
-                        if (internetAvailable()) {
-                            retainSortOrder();
-                            if (mQuery == null) {
-                                setOfflineUI();
-                            } else {
-                                searchMovie(mQuery);
-                                setOnlineUI();
-                            }
-                        } else {
-                            setOfflineUI();
-                        }
                         break;
                 }
             }
@@ -202,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     }
 
     public boolean internetAvailable() {
-
         // Get a reference to the ConnectivityManager to check state of network connectivity
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -211,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         if (connectivityManager != null) {
             networkInfo = connectivityManager.getActiveNetworkInfo();
         }
-
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 
@@ -227,16 +203,15 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         mActivityMainBinding.loadingIndicator.setVisibility(View.GONE);
         mActivityMainBinding.noInternetImage.setVisibility(View.VISIBLE);
         mActivityMainBinding.noInternetText.setVisibility(View.VISIBLE);
-        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3 && internetAvailable()) {
-            mActivityMainBinding.noInternetImage.setImageResource(R.drawable.ic_magnify_white_24dp);
-            mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.new_search));
-        } else if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2){
+        // Shows a text if no favourites movie in the DB yet
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
             mActivityMainBinding.noInternetImage.setVisibility(View.INVISIBLE);
             mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.no_favourites));
         } else {
             mActivityMainBinding.noInternetImage.setImageResource(R.drawable.wifi);
             mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.no_internet));
         }
+        // Resizes the icon when in landscape to fit the screen
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE | mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
             mActivityMainBinding.noInternetImage.getLayoutParams().height = 256;
             mActivityMainBinding.noInternetImage.getLayoutParams().width = 256;
@@ -252,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                 DetailsFragment detailsFragment = new DetailsFragment();
                 Bundle bundle = new Bundle();
                 bundle.putParcelable(CLICKED_MOVIE, resultMovie);
+                bundle.putInt(SPINNER_SELECTION, mActivityMainBinding.spinner.getSelectedItemPosition());
                 detailsFragment.setArguments(bundle);
 
                 fragmentManager.beginTransaction()
@@ -261,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
 
             } else {
                 Intent intent = new Intent(this, DetailsActivity.class);
-                intent.putExtra("search", mQuery);
                 intent.putExtra(CLICKED_MOVIE, resultMovie);
                 startActivity(intent);
             }
@@ -270,12 +245,13 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         }
     }
 
-private void retainSortOrder() {
+    // This method saves the last sort order selected in Shared Preferences
+    private void retainSortOrder() {
         SharedPreferences.Editor editor = getPreferences(0).edit();
         int sortOrder = mActivityMainBinding.spinner.getSelectedItemPosition();
         editor.putInt(SPINNER_SELECTION, sortOrder);
         editor.apply();
-}
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -287,8 +263,6 @@ private void retainSortOrder() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                mQuery = query;
-                System.out.println("query main: " + mQuery);
                 searchMovie(query);
                 return false;
             }
@@ -317,6 +291,7 @@ private void retainSortOrder() {
         return super.onOptionsItemSelected(item);
     }
 
+    // Search method to search for movies by title.Defined in the ViewModel
     private void searchMovie(String query) {
         mActivityMainBinding.spinner.setSelection(3);
         mViewModel.getSearchedMovie(getContentResolver(), query).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
@@ -325,5 +300,25 @@ private void retainSortOrder() {
     @Override
     public AndroidInjector<Fragment> supportFragmentInjector() {
         return fragmentDispatchingAndroidInjector;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        System.out.println(mActivityMainBinding.spinner.getSelectedItemPosition());
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
+                refreshFavourites();
+        }
+    }
+
+    private void refreshFavourites() {
+        mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> {
+            if (mMoviesList.size() == 0 && mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
+                setOfflineUI();
+            } else {
+                setOnlineUI();
+                processResponse(mMoviesList);
+            }
+        });
     }
 }

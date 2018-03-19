@@ -1,7 +1,7 @@
-package it.redlor.popularmovie2.ui;
+package it.redlor.popularmovie2.ui.callbacks;
 
 /**
- * Created by Hp on 10/03/2018.
+ * Interface to open the trailer on click
  */
 
 public interface VideoClickCallback {

@@ -1,4 +1,4 @@
-package it.redlor.popularmovie2.ui;
+package it.redlor.popularmovie2.ui.adapters;
 
 
 import android.databinding.ViewDataBinding;
@@ -14,12 +14,10 @@ import it.redlor.popularmovie2.BR;
 import it.redlor.popularmovie2.databinding.ListItemBinding;
 import it.redlor.popularmovie2.pojos.ResultMovie;
 import it.redlor.popularmovie2.service.AnimationUtil;
+import it.redlor.popularmovie2.ui.callbacks.MovieClickCallback;
 import it.redlor.popularmovie2.viewmodel.MoviesListViewModel;
 
 public class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieRecyclerAdapter.MovieViewHolder> {
-
-    private static final String BASE_THUMBNAIL_URL = "http://image.tmdb.org/t/p/";
-    private static final String THUMBNAIL_SIZE = "w185/";
 
     private int previousPosition = 0;
 

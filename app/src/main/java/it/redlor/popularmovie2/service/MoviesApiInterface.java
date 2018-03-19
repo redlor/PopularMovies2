@@ -28,8 +28,7 @@ public interface MoviesApiInterface {
     @GET("movie/{id}/reviews")
     Observable<ReviewsRoot> getReviews(@Path("id") int movieId, @Query("api_key") String apiKey);
 
+    // Url request for the searched movies
     @GET("search/movie")
     Observable<Root> getSearchedMovie(@Query("api_key") String apiKey, @Query("query") String movieName);
 }
-
-// https://api.themoviedb.org/3/search/movie?api_key=###&query=tron

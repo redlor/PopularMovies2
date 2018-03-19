@@ -10,7 +10,7 @@
 
         <variable
             name="callback"
-            type="it.redlor.popularmovie2.ui.MovieClickCallback" />
+            type="it.redlor.popularmovie2.ui.callbacks.MovieClickCallback" />
     </data>
 
     <LinearLayout

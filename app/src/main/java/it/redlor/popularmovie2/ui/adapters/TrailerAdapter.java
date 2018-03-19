@@ -1,4 +1,4 @@
-package it.redlor.popularmovie2.ui;
+package it.redlor.popularmovie2.ui.adapters;
 
 import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
@@ -12,9 +12,10 @@ import java.util.List;
 import it.redlor.popularmovie2.BR;
 import it.redlor.popularmovie2.databinding.TrailerBinding;
 import it.redlor.popularmovie2.pojos.Trailer;
+import it.redlor.popularmovie2.ui.callbacks.VideoClickCallback;
 
 /**
- * Created by Hp on 10/03/2018.
+ * * This class creates an adapter for the trailers in the RecyclerView
  */
 
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerViewHolder> {
@@ -44,7 +45,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerV
         return mTrailersList.size();
     }
 
-     static class TrailerViewHolder extends RecyclerView.ViewHolder {
+    static class TrailerViewHolder extends RecyclerView.ViewHolder {
 
         private final ViewDataBinding mViewDataBinding;
 

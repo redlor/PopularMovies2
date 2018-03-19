@@ -5,9 +5,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-/**
- * Created by Hp on 10/03/2018.
- */
 
 public class VideosRoot {
 

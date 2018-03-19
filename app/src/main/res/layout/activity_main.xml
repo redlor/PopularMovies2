@@ -17,7 +17,7 @@
             android:prompt="@string/app_name"
             android:spinnerMode="dropdown"
             android:visibility="visible"
-            tools:entries="@array/sort_movies"/>
+            tools:entries="@array/sort_movies" />
 
         <ImageView
             android:id="@+id/no_internet_image"
@@ -35,12 +35,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/no_internet_image"
-            android:gravity="center"
-            android:visibility="gone"
             android:layout_marginTop="@dimen/margin"
+            android:gravity="center"
             android:text="@string/no_internet"
             android:textColor="@android:color/white"
             android:textSize="@dimen/no_internet_text"
+            android:visibility="gone"
             tools:text="@string/no_internet" />
 
         <android.support.v7.widget.RecyclerView

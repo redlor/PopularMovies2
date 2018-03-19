@@ -223,7 +223,7 @@ public class ResultMovie implements Parcelable {
         parcel.writeString(this.releaseDate);
         parcel.writeDouble(this.voteAverage);
         parcel.writeString(this.overview);
-        parcel.writeByte((byte) (this.favourite ? 1 :0));
+        parcel.writeByte((byte) (this.favourite ? 1 : 0));
     }
 
     @Override

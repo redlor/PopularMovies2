@@ -27,9 +27,11 @@ import it.redlor.popularmovie2.di.Injectable;
 import it.redlor.popularmovie2.pojos.ResultMovie;
 import it.redlor.popularmovie2.pojos.Review;
 import it.redlor.popularmovie2.pojos.Trailer;
+import it.redlor.popularmovie2.ui.adapters.ReviewAdapter;
+import it.redlor.popularmovie2.ui.adapters.TrailerAdapter;
+import it.redlor.popularmovie2.ui.callbacks.VideoClickCallback;
 import it.redlor.popularmovie2.viewmodel.MovieViewModel;
 import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
-
 
 /**
  * Fragment with Movies's details
@@ -38,6 +40,7 @@ import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
 public class DetailsFragment extends Fragment implements Injectable, VideoClickCallback {
 
     private static final String CLICKED_MOVIE = "clicked_movie";
+    private static final String SPINNER_SELECTION = "spinnerSelection";
     private static final String PATH_YOUTUBE_APP = "vnd.youtube:";
     private static final String PATH_YOUTUBE_WEB = "http://www.youtube.com/watch?v=";
 
@@ -54,8 +57,6 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         fragmentDetailsBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_details, container, false);
-
-
         return fragmentDetailsBinding.getRoot();
     }
 
@@ -65,6 +66,7 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         Bundle bundle = new Bundle();
         bundle = getArguments();
         ResultMovie resultMovie = bundle.getParcelable(CLICKED_MOVIE);
+        int spinnerPosition = bundle.getInt(SPINNER_SELECTION);
 
         movieViewModel = ViewModelProviders.of(this, viewModelFactory).get(MovieViewModel.class);
         movieViewModel.setResultMovie(resultMovie);
@@ -75,6 +77,8 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
             movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
             fragmentDetailsBinding.reviewsLabelTv.setVisibility(View.VISIBLE);
         }
+
+        // Check if a movie is already in the DB and change the icon accordingly
         movieViewModel.getFavourite().observe(this, favourite -> {
             if (favourite) {
                 fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
@@ -82,6 +86,7 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
                 fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
             }
         });
+        // If the icon is pressed, save or remove the movie in the DB
         fragmentDetailsBinding.star.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,6 +96,11 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
                 } else {
                     movieViewModel.addFavourite(getActivity().getContentResolver());
                     fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
+                }
+                // This check will update the left pane when changing favourite status in dual pane mode
+                if (spinnerPosition == 2) {
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    startActivity(intent);
                 }
             }
         });

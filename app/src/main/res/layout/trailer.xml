@@ -3,12 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="trailer"
-            type="it.redlor.popularmovie2.pojos.Trailer"/>
+            type="it.redlor.popularmovie2.pojos.Trailer" />
+
         <variable
             name="callback"
-            type="it.redlor.popularmovie2.ui.VideoClickCallback"/>
+            type="it.redlor.popularmovie2.ui.callbacks.VideoClickCallback" />
     </data>
 
     <RelativeLayout
@@ -20,35 +22,35 @@
             android:id="@+id/trailer_Tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{trailer.name}"
-            android:textColor="@color/text_color_details"
-            android:layout_gravity="center_vertical"
-            android:textSize="@dimen/text_size_medium"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/margin"
+            android:layout_marginStart="@dimen/margin"
             android:lines="2"
             android:minLines="2"
             android:singleLine="false"
-            android:layout_marginLeft="@dimen/margin"
-            tools:text="Trailer"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="@dimen/margin" />
+            android:text="@{trailer.name}"
+            android:textColor="@color/text_color_details"
+            android:textSize="@dimen/text_size_medium"
+            tools:text="Trailer" />
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/margin"
-            android:layout_marginBottom="@dimen/margin"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:onClick="@{()-> callback.openTrailer(trailer.key)}"
-            android:src="@drawable/ic_play_white_36dp"
+            android:layout_marginBottom="@dimen/margin"
             android:layout_marginEnd="@dimen/margin"
-            android:layout_alignParentEnd="true" />
+            android:layout_marginRight="@dimen/margin"
+            android:onClick="@{()-> callback.openTrailer(trailer.key)}"
+            android:src="@drawable/ic_play_white_36dp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_below="@+id/trailer_Tv"
-            android:background="@android:color/white"/>
+            android:background="@android:color/white" />
 
     </RelativeLayout>
 </layout>

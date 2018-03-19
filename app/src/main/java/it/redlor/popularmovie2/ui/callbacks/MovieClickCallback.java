@@ -1,4 +1,4 @@
-package it.redlor.popularmovie2.ui;
+package it.redlor.popularmovie2.ui.callbacks;
 
 import it.redlor.popularmovie2.pojos.ResultMovie;
 

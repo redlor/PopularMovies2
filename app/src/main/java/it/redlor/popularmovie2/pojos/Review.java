@@ -3,9 +3,6 @@ package it.redlor.popularmovie2.pojos;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-/**
- * Created by Hp on 10/03/2018.
- */
 
 public class Review {
     @SerializedName("id")

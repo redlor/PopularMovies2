@@ -13,7 +13,7 @@ import android.support.annotation.Nullable;
 import static it.redlor.popularmovie2.database.MoviesContract.FavouritesMoviesEntry.TABLE_NAME;
 
 /**
- * Created by Hp on 12/03/2018.
+ * Content Provoder for the DB
  */
 
 public class MoviesContentProvider extends ContentProvider {
@@ -56,7 +56,8 @@ public class MoviesContentProvider extends ContentProvider {
                         null,
                         sortOrder);
                 break;
-            default: throw new UnsupportedOperationException("Uri unknown: "+ uri);
+            default:
+                throw new UnsupportedOperationException("Uri unknown: " + uri);
         }
 
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -68,12 +69,12 @@ public class MoviesContentProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        throw  new RuntimeException("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     @Nullable
     @Override
-    public Uri insert(@NonNull Uri uri, @Nullable ContentValues  contentValues) {
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         Uri finalUri;
 
@@ -82,12 +83,12 @@ public class MoviesContentProvider extends ContentProvider {
                 long id = db.insert(TABLE_NAME, null, contentValues);
                 if (id > 0) {
                     finalUri = ContentUris.withAppendedId(MoviesContract.FavouritesMoviesEntry.CONTENT_URI, id);
-                } else  {
+                } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 }
                 break;
-                default:
-                    throw new UnsupportedOperationException("Uri unknown: " +  uri);
+            default:
+                throw new UnsupportedOperationException("Uri unknown: " + uri);
 
         }
         getContext().getContentResolver().notifyChange(uri, null);
@@ -119,6 +120,6 @@ public class MoviesContentProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
-        throw  new RuntimeException("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 }

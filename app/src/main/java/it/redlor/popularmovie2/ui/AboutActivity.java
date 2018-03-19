@@ -9,7 +9,7 @@ import it.redlor.popularmovie2.R;
 import it.redlor.popularmovie2.databinding.ActivityAboutBinding;
 
 /**
- * Created by Hp on 18/03/2018.
+ * This activity shows information about the author and credits.
  */
 
 public class AboutActivity extends AppCompatActivity {

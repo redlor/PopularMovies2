@@ -21,11 +21,11 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.schedulers.Schedulers;
 import it.redlor.popularmovie2.BuildConfig;
+import it.redlor.popularmovie2.database.MoviesContract.FavouritesMoviesEntry;
 import it.redlor.popularmovie2.pojos.ResultMovie;
 import it.redlor.popularmovie2.pojos.Root;
 import it.redlor.popularmovie2.service.MoviesApiInterface;
 
-import it.redlor.popularmovie2.database.MoviesContract.FavouritesMoviesEntry;
 /**
  * ViewModel for the list of Movies
  */
@@ -114,6 +114,7 @@ public class MoviesListViewModel extends ViewModel {
                 }));
     }
 
+    // This method loads the movie in the DB with a Cursor and RXJava
     private void loadFavourites(ContentResolver contentResolver) {
         mCompositeDisposable.add(Single.create((SingleEmitter<Cursor> emitter) -> {
             Cursor cursor = contentResolver.query(FavouritesMoviesEntry.CONTENT_URI,
@@ -125,46 +126,48 @@ public class MoviesListViewModel extends ViewModel {
                 emitter.onSuccess(cursor);
             }
         })
-            .observeOn(AndroidSchedulers.mainThread())
-             .subscribeWith(new DisposableSingleObserver<Cursor>() {
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableSingleObserver<Cursor>() {
 
-                 @Override
-                 public void onSuccess(Cursor cursor) {
-                     mMoviesList.setValue(readMovies(cursor));
-                 }
-                 private ArrayList<ResultMovie> readMovies(Cursor cursor) {
-                     ArrayList<ResultMovie> movies = new ArrayList<>();
-                     for (int i=0; i<cursor.getCount(); i++) {
-                         int id = cursor.getColumnIndex(FavouritesMoviesEntry._ID);
-                         int title = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_TITLE);
-                         int voteAverage = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_VOTE_AVERAGE);
-                         int releaseDate = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_RELEASE_DATE);
-                         int posterPath = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_POSTER_PATH);
-                         int overview = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_OVERVIEW);
+                    @Override
+                    public void onSuccess(Cursor cursor) {
+                        mMoviesList.setValue(readMovies(cursor));
+                    }
 
-                         cursor.moveToPosition(i);
+                    private ArrayList<ResultMovie> readMovies(Cursor cursor) {
+                        ArrayList<ResultMovie> movies = new ArrayList<>();
+                        for (int i = 0; i < cursor.getCount(); i++) {
+                            int id = cursor.getColumnIndex(FavouritesMoviesEntry._ID);
+                            int title = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_TITLE);
+                            int voteAverage = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_VOTE_AVERAGE);
+                            int releaseDate = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_RELEASE_DATE);
+                            int posterPath = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_POSTER_PATH);
+                            int overview = cursor.getColumnIndex(FavouritesMoviesEntry.COLUMN_NAME_OVERVIEW);
 
-                         ResultMovie resultMovie = new ResultMovie();
-                         resultMovie.setId(cursor.getInt(id));
-                         resultMovie.setTitle(cursor.getString(title));
-                         resultMovie.setVoteAverage(cursor.getDouble(voteAverage));
-                         resultMovie.setReleaseDate(cursor.getString(releaseDate));
-                         resultMovie.setPosterPath(cursor.getString(posterPath));
-                         resultMovie.setOverview(cursor.getString(overview));
-                         resultMovie.setFavourite(true);
-                         movies.add(resultMovie);
-                     }
-                     return movies;
-                 }
+                            cursor.moveToPosition(i);
 
-                 @Override
-                 public void onError(Throwable e) {
+                            ResultMovie resultMovie = new ResultMovie();
+                            resultMovie.setId(cursor.getInt(id));
+                            resultMovie.setTitle(cursor.getString(title));
+                            resultMovie.setVoteAverage(cursor.getDouble(voteAverage));
+                            resultMovie.setReleaseDate(cursor.getString(releaseDate));
+                            resultMovie.setPosterPath(cursor.getString(posterPath));
+                            resultMovie.setOverview(cursor.getString(overview));
+                            resultMovie.setFavourite(true);
+                            movies.add(resultMovie);
+                        }
+                        return movies;
+                    }
 
-                 }
-             }));
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                }));
 
     }
 
+    // This method is to check if a movie is already in the DB
     public void checkFavouriteStatus(ResultMovie resultMovie, ContentResolver resolver) {
         Cursor cursor = resolver.query(FavouritesMoviesEntry.CONTENT_URI,
                 null,
@@ -172,31 +175,32 @@ public class MoviesListViewModel extends ViewModel {
                 new String[]{Integer.toString(resultMovie.getId())},
                 null);
 
-            if (cursor.getCount() > 0) {
-                System.out.println("true");
-                resultMovie.setFavourite(true);
-            } else {
-                resultMovie.setFavourite(false);
-            }
+        if (cursor.getCount() > 0) {
+            System.out.println("true");
+            resultMovie.setFavourite(true);
+        } else {
+            resultMovie.setFavourite(false);
+        }
     }
 
-private void loadSearchedMovie(ContentResolver contentResolver, String query) {
-    mCompositeDisposable.add((Disposable) mMoviesApiInterface.getSearchedMovie(API_KEY, query)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Consumer<Root>() {
-                @Override
-                public void accept(Root root) throws Exception {
-                    mMoviesList.setValue(new ArrayList<>());
-                    for (ResultMovie resultMovie : root.getResults()) {
-                        if (root.getResults() != null) {
-                            mMoviesList.getValue().add(resultMovie);
-                            checkFavouriteStatus(resultMovie, contentResolver);
+    // This method loads the movies matching the search query
+    private void loadSearchedMovie(ContentResolver contentResolver, String query) {
+        mCompositeDisposable.add((Disposable) mMoviesApiInterface.getSearchedMovie(API_KEY, query)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Root>() {
+                    @Override
+                    public void accept(Root root) throws Exception {
+                        mMoviesList.setValue(new ArrayList<>());
+                        for (ResultMovie resultMovie : root.getResults()) {
+                            if (root.getResults() != null) {
+                                mMoviesList.getValue().add(resultMovie);
+                                checkFavouriteStatus(resultMovie, contentResolver);
+                            }
                         }
                     }
-                }
-            }));
-}
+                }));
+    }
 
     @Override
     protected void onCleared() {

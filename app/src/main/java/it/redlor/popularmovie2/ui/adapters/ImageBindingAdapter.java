@@ -1,10 +1,12 @@
-package it.redlor.popularmovie2.ui;
+package it.redlor.popularmovie2.ui.adapters;
 
 import android.databinding.BindingAdapter;
 import android.net.Uri;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+
+import it.redlor.popularmovie2.R;
 
 /**
  * Utility to bind the image to the ImageView using Picasso
@@ -21,9 +23,15 @@ public class ImageBindingAdapter {
                 .appendPath(THUMBNAIL_SIZE)
                 .appendEncodedPath(imageUrl)
                 .build();
-        Picasso.with(imageView.getContext())
-                .load(uri.toString())
-         //       .placeholder(R.drawable.clapper_board)
-                .into(imageView);
+        if (imageUrl == null) {
+            Picasso.with(imageView.getContext())
+                    .load(R.drawable.clapper_board)
+                    .into(imageView);
+        } else {
+            Picasso.with(imageView.getContext())
+                    .load(uri.toString())
+                    .into(imageView);
+        }
+
     }
 }

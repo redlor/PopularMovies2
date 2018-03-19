@@ -1,4 +1,4 @@
-package it.redlor.popularmovie2.ui;
+package it.redlor.popularmovie2.ui.adapters;
 
 import android.databinding.ViewDataBinding;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +13,7 @@ import it.redlor.popularmovie2.databinding.ReviewBinding;
 import it.redlor.popularmovie2.pojos.Review;
 
 /**
- * Created by Hp on 11/03/2018.
+ * This class creates an adapter for the reviews in the RecyclerView
  */
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder> {

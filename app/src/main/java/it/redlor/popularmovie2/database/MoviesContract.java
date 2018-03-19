@@ -4,19 +4,17 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
- * Created by Hp on 12/03/2018.
+ * Contract for the DB
  */
 
 public class MoviesContract {
 
+    public static final String CONTENT_AUTHORITY = "it.redlor.popularmovie2";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String FAVOURITES_PATH = "favourites";
+
     public MoviesContract() {
     }
-
-    public static final String CONTENT_AUTHORITY = "it.redlor.popularmovie2";
-
-    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-
-    public static final String FAVOURITES_PATH = "favourites";
 
     public static class FavouritesMoviesEntry implements BaseColumns {
         public static final Uri CONTENT_URI = BASE_CONTENT_URI.buildUpon()

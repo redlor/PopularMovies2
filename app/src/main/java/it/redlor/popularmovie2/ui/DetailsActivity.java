@@ -1,9 +1,6 @@
 package it.redlor.popularmovie2.ui;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -19,7 +16,6 @@ import it.redlor.popularmovie2.R;
 import it.redlor.popularmovie2.pojos.ResultMovie;
 
 
-
 /**
  * Activity to show movie details.
  * It passes data to the Fragment
@@ -29,7 +25,6 @@ public class DetailsActivity extends AppCompatActivity implements HasSupportFrag
 
     private static final String CLICKED_MOVIE = "clicked_movie";
 
-    String mQuery;
     @Inject
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
 
@@ -42,8 +37,6 @@ public class DetailsActivity extends AppCompatActivity implements HasSupportFrag
 
         Intent intent = getIntent();
         ResultMovie resultMovie = intent.getParcelableExtra(CLICKED_MOVIE);
-        mQuery = intent.getStringExtra("search");
-        System.out.println("query " + mQuery);
         Bundle bundle = new Bundle();
         bundle.putParcelable(CLICKED_MOVIE, resultMovie);
         DetailsFragment detailsFragment = new DetailsFragment();
@@ -53,7 +46,6 @@ public class DetailsActivity extends AppCompatActivity implements HasSupportFrag
                         R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.details_container, detailsFragment)
                 .commit();
-
     }
 
     @Override
@@ -64,33 +56,14 @@ public class DetailsActivity extends AppCompatActivity implements HasSupportFrag
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
+        // If the back button in the toolbar is pressed, it has the same behaviour of the phone
+        // back button, in order to show the last search or tab
         switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
                 return true;
-                /*if (internetAvailable()) {
-                    Intent returnIntent = new Intent(DetailsActivity.this, MainActivity.class);
-                    returnIntent.putExtra("query", mQuery);
-                    startActivity(returnIntent);
-                    return true;
-                } */
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    public boolean internetAvailable() {
-
-        // Get a reference to the ConnectivityManager to check state of network connectivity
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        // Get details on the currently active default data network
-        NetworkInfo networkInfo = null;
-        if (connectivityManager != null) {
-            networkInfo = connectivityManager.getActiveNetworkInfo();
-        }
-
-        return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
 }
