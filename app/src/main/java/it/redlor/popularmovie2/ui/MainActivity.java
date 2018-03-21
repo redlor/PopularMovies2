@@ -10,6 +10,8 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,6 +24,7 @@ import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -50,18 +53,31 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
 
     private static final String CLICKED_MOVIE = "clicked_movie";
     private static final String SPINNER_SELECTION = "spinnerSelection";
+    private static final String RECYCLER_VIEW_STATE = "rvState";
+    private static final String SEARCH_QUERY = "query";
+    private static final String SEARCH_LIST = "list";
 
     // Declare a variable to check if in Dual Pane mode
     public static boolean mTwoPane;
+
+    private String mQuery;
+    private Parcelable mListState;
+    private Handler mHandler;
+    private SearchView mActionSearchView;
+    private MenuItem mActionSearchMenuItem;
+    private ArrayList<ResultMovie> mSearchSavedList;
+
     MovieRecyclerAdapter mAdapter;
+    private GridLayoutManager mGridLayoutManager;
     MoviesListViewModel mViewModel;
     ActivityMainBinding mActivityMainBinding;
+
     @Inject
     DispatchingAndroidInjector<Fragment> fragmentDispatchingAndroidInjector;
     @Inject
     ViewModelFactory mViewModelFactory;
 
-    List<String> mSpinnerlist;
+    List<String> mSpinnerList;
 
     // Method to dynamically calculate how many columns should be shown
     private static int calculateNoOfColumns(Context context) {
@@ -93,9 +109,20 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         mViewModel = ViewModelProviders.of(this, mViewModelFactory)
                 .get(MoviesListViewModel.class);
 
+        mHandler = new Handler();
+        mSearchSavedList = new ArrayList<ResultMovie>();
+
+        // Restore the position of scrolling, the query in the SearchView and the list if in Search Mode
+        if (savedInstanceState != null) {
+            mListState = savedInstanceState.getParcelable(RECYCLER_VIEW_STATE);
+            mQuery = savedInstanceState.getString(SEARCH_QUERY);
+            mSearchSavedList = savedInstanceState.getParcelableArrayList(SEARCH_LIST);
+        }
+
+
         // Initialize Spinner
-        mSpinnerlist = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sort_movies)));
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, mSpinnerlist) {
+        mSpinnerList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sort_movies)));
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, mSpinnerList) {
             @Override
             public boolean isEnabled(int position) {
                 // Disable Search Mode option since it is not intended to be clicked
@@ -126,13 +153,16 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         // Use Shared preferences to retain the sort order when coming back from Details Activity
         SharedPreferences sharedPreferences = getPreferences(0);
         mActivityMainBinding.spinner.setSelection(sharedPreferences.getInt(SPINNER_SELECTION, 0));
-        // If the last visited tab was Search Mode, with this check we open the firt tab when launching the app
+
+        // If the last visited tab was Search Mode, with this check we open the first tab when launching the app
+        // and then set the last visited from SharedPreferences
         if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
             mActivityMainBinding.spinner.setSelection(0);
         }
 
         // Defining the spinner items behavior
         mActivityMainBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 switch (i) {
@@ -158,14 +188,25 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                         retainSortOrder();
                         break;
                     case 2:
-                      refreshFavourites();
+                        refreshFavourites();
                         retainSortOrder();
                         break;
+                    case 3:
+                        processResponse(mSearchSavedList);
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        // I added the onTouchListener because the position of the RecyclerView was retained also when changing spinner selection
+        // Setting the list state to null when clicking on a new tab avoids that behaviour
+        mActivityMainBinding.spinner.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                mListState = null;
+                return false;
             }
         });
     }
@@ -173,7 +214,9 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     // Method to set the data from the ViewModel in the RecyclerView
     private void processResponse(List<ResultMovie> moviesList) {
         int numberOfColumns = calculateNoOfColumns(getApplicationContext());
-        mActivityMainBinding.moviesRv.setLayoutManager(new GridLayoutManager(MainActivity.this, numberOfColumns));
+        mGridLayoutManager = new GridLayoutManager(this, numberOfColumns);
+        mGridLayoutManager.onRestoreInstanceState(mListState);
+        mActivityMainBinding.moviesRv.setLayoutManager(mGridLayoutManager);
         mAdapter = new MovieRecyclerAdapter(moviesList, mViewModel, this);
         mActivityMainBinding.moviesRv.setAdapter(mAdapter);
         mActivityMainBinding.loadingIndicator.setVisibility(View.GONE);
@@ -211,7 +254,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
             mActivityMainBinding.noInternetImage.setImageResource(R.drawable.wifi);
             mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.no_internet));
         }
-        // Resizes the icon when in landscape to fit the screen
+        // Re-sizes the icon when in landscape to fit the screen
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE | mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
             mActivityMainBinding.noInternetImage.getLayoutParams().height = 256;
             mActivityMainBinding.noInternetImage.getLayoutParams().width = 256;
@@ -258,24 +301,54 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
 
-        MenuItem searchItem = menu.findItem(R.id.search_item);
-        SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        mActionSearchMenuItem = menu.findItem(R.id.search_item);
+        mActionSearchView = (SearchView) mActionSearchMenuItem.getActionView();
+        mActionSearchView.setIconifiedByDefault(false);
+
+        mActionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                // Save the query in a global variable in order to restore it on orientation change
+                mQuery = query;
                 searchMovie(query);
                 return false;
             }
 
+            // Override this method to save the text actually written in the TextView when rotating the screen
             @Override
             public boolean onQueryTextChange(String newText) {
-                return false;
+                if (newText != null) {
+                    mQuery = newText;
+                }
+                    return false;
             }
         });
 
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    // Override this method to open the SearchView if it was open before orientation change
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mQuery != null && !mQuery.isEmpty()) {
+            final String query = mQuery;
+
+            if(mHandler != null
+                    && mActionSearchView != null
+                    && mActionSearchMenuItem != null) {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mActionSearchMenuItem.expandActionView();
+                        mActionSearchView.setQuery(query, false);
+                        mActionSearchView.clearFocus();
+                    }
+                });
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -294,7 +367,11 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     // Search method to search for movies by title.Defined in the ViewModel
     private void searchMovie(String query) {
         mActivityMainBinding.spinner.setSelection(3);
-        mViewModel.getSearchedMovie(getContentResolver(), query).observe(MainActivity.this, mMoviesList -> processResponse(mMoviesList));
+        mViewModel.getSearchedMovie(getContentResolver(), query).observe(MainActivity.this, mMoviesList -> {
+            // Since the Search Mode is not selectable but it is re-triggered on orientation change if active, I save the list in
+            // a global variable to restore it
+            mSearchSavedList = mMoviesList;
+            processResponse(mMoviesList);} );
     }
 
     @Override
@@ -305,12 +382,14 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     @Override
     protected void onResume() {
         super.onResume();
-        System.out.println(mActivityMainBinding.spinner.getSelectedItemPosition());
+        // I need to refresh the Favourites onResume otherwise it won't show the change
+        // if a movie was removed from Favourites
         if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
                 refreshFavourites();
         }
     }
 
+    // Set the empty state if no favourites in the database, otherwise sho the list
     private void refreshFavourites() {
         mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> {
             if (mMoviesList.size() == 0 && mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
@@ -320,5 +399,19 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                 processResponse(mMoviesList);
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Saving the last scrolled position in the RecyclerView
+        if (mGridLayoutManager != null) {
+            outState.putParcelable(RECYCLER_VIEW_STATE, mGridLayoutManager.onSaveInstanceState());
+        }
+        // If the user is in Search Mode when rotating, save the list
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
+            outState.putParcelableArrayList(SEARCH_LIST, mSearchSavedList);
+        }
+        outState.putString(SEARCH_QUERY, mQuery);
+        super.onSaveInstanceState(outState);
     }
 }

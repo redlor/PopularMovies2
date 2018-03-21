@@ -8,7 +8,6 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -24,7 +23,7 @@ import it.redlor.popularmovie2.BuildConfig;
 import it.redlor.popularmovie2.database.MoviesContract.FavouritesMoviesEntry;
 import it.redlor.popularmovie2.pojos.ResultMovie;
 import it.redlor.popularmovie2.pojos.Root;
-import it.redlor.popularmovie2.service.MoviesApiInterface;
+import it.redlor.popularmovie2.utils.MoviesApiInterface;
 
 /**
  * ViewModel for the list of Movies
@@ -39,7 +38,7 @@ public class MoviesListViewModel extends ViewModel {
     private Application mApplication;
     private MoviesApiInterface mMoviesApiInterface;
     private CompositeDisposable mCompositeDisposable = new CompositeDisposable();
-    private MutableLiveData<List<ResultMovie>> mMoviesList;
+    private MutableLiveData<ArrayList<ResultMovie>> mMoviesList;
 
 
     @Inject
@@ -49,27 +48,27 @@ public class MoviesListViewModel extends ViewModel {
         mMoviesList = new MutableLiveData<>();
     }
 
-    public LiveData<List<ResultMovie>> getMostPopularMoviesList(ContentResolver contentResolver) {
+    public LiveData<ArrayList<ResultMovie>> getMostPopularMoviesList(ContentResolver contentResolver) {
         loadMostPopularMovies(contentResolver);
         return mMoviesList;
     }
 
-    public LiveData<List<ResultMovie>> getTopRatedMoviesList(ContentResolver contentResolver) {
+    public LiveData<ArrayList<ResultMovie>> getTopRatedMoviesList(ContentResolver contentResolver) {
         loadTopRatedMovies(contentResolver);
         return mMoviesList;
     }
 
-    public LiveData<List<ResultMovie>> getFavourites(ContentResolver contentResolver) {
+    public LiveData<ArrayList<ResultMovie>> getFavourites(ContentResolver contentResolver) {
         loadFavourites(contentResolver);
         return mMoviesList;
     }
 
-    public LiveData<List<ResultMovie>> getSearchedMovie(ContentResolver contentResolver, String query) {
+    public LiveData<ArrayList<ResultMovie>> getSearchedMovie(ContentResolver contentResolver, String query) {
         loadSearchedMovie(contentResolver, query);
         return mMoviesList;
     }
 
-    public void setMoviesList(MutableLiveData<List<ResultMovie>> mMoviesList) {
+    public void setMoviesList(MutableLiveData<ArrayList<ResultMovie>> mMoviesList) {
         this.mMoviesList = mMoviesList;
     }
 

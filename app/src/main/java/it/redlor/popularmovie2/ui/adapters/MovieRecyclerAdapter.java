@@ -13,7 +13,7 @@ import java.util.List;
 import it.redlor.popularmovie2.BR;
 import it.redlor.popularmovie2.databinding.ListItemBinding;
 import it.redlor.popularmovie2.pojos.ResultMovie;
-import it.redlor.popularmovie2.service.AnimationUtil;
+import it.redlor.popularmovie2.utils.AnimationUtil;
 import it.redlor.popularmovie2.ui.callbacks.MovieClickCallback;
 import it.redlor.popularmovie2.viewmodel.MoviesListViewModel;
 

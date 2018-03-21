@@ -1,4 +1,4 @@
-package it.redlor.popularmovie2.service;
+package it.redlor.popularmovie2.utils;
 
 import io.reactivex.Observable;
 import it.redlor.popularmovie2.pojos.ReviewsRoot;
