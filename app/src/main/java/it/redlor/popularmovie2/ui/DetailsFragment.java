@@ -30,6 +30,7 @@ import it.redlor.popularmovie2.pojos.Trailer;
 import it.redlor.popularmovie2.ui.adapters.ReviewAdapter;
 import it.redlor.popularmovie2.ui.adapters.TrailerAdapter;
 import it.redlor.popularmovie2.ui.callbacks.VideoClickCallback;
+import it.redlor.popularmovie2.utils.SimpleDividerItemDecoration;
 import it.redlor.popularmovie2.viewmodel.MovieViewModel;
 import it.redlor.popularmovie2.viewmodel.ViewModelFactory;
 
@@ -110,6 +111,7 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
 
     private void setTrailers(List<Trailer> trailersList) {
         fragmentDetailsBinding.trailersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        fragmentDetailsBinding.trailersRecyclerView.addItemDecoration(new SimpleDividerItemDecoration(getContext()));
         trailerAdapter = new TrailerAdapter(trailersList, this);
         fragmentDetailsBinding.trailersRecyclerView.setAdapter(trailerAdapter);
     }

@@ -27,7 +27,7 @@ import it.redlor.popularmovie2.pojos.Review;
 import it.redlor.popularmovie2.pojos.ReviewsRoot;
 import it.redlor.popularmovie2.pojos.Trailer;
 import it.redlor.popularmovie2.pojos.VideosRoot;
-import it.redlor.popularmovie2.service.MoviesApiInterface;
+import it.redlor.popularmovie2.utils.MoviesApiInterface;
 
 /**
  * ViewModel for the Details Screen

@@ -1,4 +1,4 @@
-package it.redlor.popularmovie2.service;
+package it.redlor.popularmovie2.utils;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;

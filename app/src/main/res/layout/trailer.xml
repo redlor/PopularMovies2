@@ -24,12 +24,11 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_gravity="center_vertical"
+            android:gravity="center"
             android:layout_marginLeft="@dimen/margin"
             android:layout_marginStart="@dimen/margin"
+            android:maxLines="2"
             android:lines="2"
-            android:minLines="2"
-            android:singleLine="false"
             android:text="@{trailer.name}"
             android:textColor="@color/text_color_details"
             android:textSize="@dimen/text_size_medium"
@@ -46,11 +45,6 @@
             android:onClick="@{()-> callback.openTrailer(trailer.key)}"
             android:src="@drawable/ic_play_white_36dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@+id/trailer_Tv"
-            android:background="@android:color/white" />
 
     </RelativeLayout>
 </layout>

@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import io.reactivex.schedulers.Schedulers;
-import it.redlor.popularmovie2.service.MoviesApiInterface;
+import it.redlor.popularmovie2.utils.MoviesApiInterface;
 import okhttp3.Cache;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
