@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -44,6 +45,8 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
     private static final String SPINNER_SELECTION = "spinnerSelection";
     private static final String PATH_YOUTUBE_APP = "vnd.youtube:";
     private static final String PATH_YOUTUBE_WEB = "http://www.youtube.com/watch?v=";
+    private static final String REVIEWS_STATE = "reviews_state";
+    private static final String TRAILERS_STATE = "trailers_state";
 
     FragmentDetailsBinding fragmentDetailsBinding;
 
@@ -54,70 +57,88 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
     TrailerAdapter trailerAdapter;
     ReviewAdapter reviewAdapter;
 
+    // Variables to save the scrolled position of the RecyclerView on orientation change
+    private Parcelable reviewsListState;
+    private Parcelable trailersListState;
+    private LinearLayoutManager reviewsLinearLayoutManager;
+    private LinearLayoutManager trailersLinearLayoutManager;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        fragmentDetailsBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_details, container, false);
-        return fragmentDetailsBinding.getRoot();
+            fragmentDetailsBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_details, container, false);
+            return fragmentDetailsBinding.getRoot();
+
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Bundle bundle = new Bundle();
-        bundle = getArguments();
-        ResultMovie resultMovie = bundle.getParcelable(CLICKED_MOVIE);
-        int spinnerPosition = bundle.getInt(SPINNER_SELECTION);
 
-        movieViewModel = ViewModelProviders.of(this, viewModelFactory).get(MovieViewModel.class);
-        movieViewModel.setResultMovie(resultMovie);
-        fragmentDetailsBinding.setVariable(BR.movieViewModel, movieViewModel);
+            Bundle bundle = new Bundle();
+            bundle = getArguments();
+            ResultMovie resultMovie = bundle.getParcelable(CLICKED_MOVIE);
+            int spinnerPosition = bundle.getInt(SPINNER_SELECTION);
 
-        if (internetAvailable()) {
-            movieViewModel.getTrailers().observe(this, mTrailersList -> setTrailers(mTrailersList));
-            movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
-            fragmentDetailsBinding.reviewsLabelTv.setVisibility(View.VISIBLE);
-        }
+            movieViewModel = ViewModelProviders.of(this, viewModelFactory).get(MovieViewModel.class);
+            movieViewModel.setResultMovie(resultMovie);
+            fragmentDetailsBinding.setVariable(BR.movieViewModel, movieViewModel);
 
-        // Check if a movie is already in the DB and change the icon accordingly
-        movieViewModel.getFavourite().observe(this, favourite -> {
-            if (favourite) {
-                fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
-            } else {
-                fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
+            if (internetAvailable()) {
+                movieViewModel.getTrailers().observe(this, mTrailersList -> setTrailers(mTrailersList));
+                movieViewModel.getReviews().observe(this, mReviewsList -> setReviews(mReviewsList));
+                fragmentDetailsBinding.reviewsLabelTv.setVisibility(View.VISIBLE);
             }
-        });
-        // If the icon is pressed, save or remove the movie in the DB
-        fragmentDetailsBinding.star.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (resultMovie.isFavourite()) {
-                    movieViewModel.removeFavourite(getActivity().getContentResolver());
-                    fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
-                } else {
-                    movieViewModel.addFavourite(getActivity().getContentResolver());
+
+            // Check if a movie is already in the DB and change the icon accordingly
+            movieViewModel.getFavourite().observe(this, favourite -> {
+                if (favourite) {
                     fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
+                } else {
+                    fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
                 }
-                // This check will update the left pane when changing favourite status in dual pane mode
-                if (spinnerPosition == 2) {
-                    Intent intent = new Intent(getActivity(), MainActivity.class);
-                    startActivity(intent);
+            });
+            // If the icon is pressed, save or remove the movie in the DB
+            fragmentDetailsBinding.star.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (resultMovie.isFavourite()) {
+                        movieViewModel.removeFavourite(getActivity().getContentResolver());
+                        fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_outline_white_36dp);
+                    } else {
+                        movieViewModel.addFavourite(getActivity().getContentResolver());
+                        fragmentDetailsBinding.star.setImageResource(R.drawable.ic_star_white_36dp);
+                    }
+                    // This check will update the left pane when changing favourite status in dual pane mode
+                    if (spinnerPosition == 2) {
+                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                        startActivity(intent);
+                    }
                 }
-            }
-        });
-        getActivity().setTitle(resultMovie.getTitle());
+            });
+            getActivity().setTitle(resultMovie.getTitle());
 
+            // Retrieve the last scrolled position inside the RecyclerViews on orientation change
+        if (savedInstanceState != null && fragmentDetailsBinding.reviewsRecyclerView != null) {
+            reviewsListState = savedInstanceState.getParcelable(REVIEWS_STATE);
+            trailersListState = savedInstanceState.getParcelable(TRAILERS_STATE);
+
+        }
     }
 
     private void setTrailers(List<Trailer> trailersList) {
-        fragmentDetailsBinding.trailersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        trailersLinearLayoutManager = new LinearLayoutManager(getContext());
+        trailersLinearLayoutManager.onRestoreInstanceState(trailersListState);
+        fragmentDetailsBinding.trailersRecyclerView.setLayoutManager(trailersLinearLayoutManager);
         fragmentDetailsBinding.trailersRecyclerView.addItemDecoration(new SimpleDividerItemDecoration(getContext()));
         trailerAdapter = new TrailerAdapter(trailersList, this);
         fragmentDetailsBinding.trailersRecyclerView.setAdapter(trailerAdapter);
     }
 
     private void setReviews(List<Review> reviewList) {
-        fragmentDetailsBinding.reviewsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        reviewsLinearLayoutManager = new LinearLayoutManager(getContext());
+        reviewsLinearLayoutManager.onRestoreInstanceState(reviewsListState);
+        fragmentDetailsBinding.reviewsRecyclerView.setLayoutManager(reviewsLinearLayoutManager);
         reviewAdapter = new ReviewAdapter(reviewList);
         fragmentDetailsBinding.reviewsRecyclerView.setAdapter(reviewAdapter);
     }
@@ -134,6 +155,20 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save the scrolling position on the RecyclerViews on orientation change
+        if (reviewsLinearLayoutManager != null) {
+            outState.putParcelable(REVIEWS_STATE, reviewsLinearLayoutManager.onSaveInstanceState());
+        }
+        if (trailersLinearLayoutManager != null) {
+            outState.putParcelable(TRAILERS_STATE, trailersLinearLayoutManager.onSaveInstanceState());
+        }
+
+    }
+
+
     public boolean internetAvailable() {
         // Get a reference to the ConnectivityManager to check state of network connectivity
         ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -143,7 +178,8 @@ public class DetailsFragment extends Fragment implements Injectable, VideoClickC
         if (connectivityManager != null) {
             networkInfo = connectivityManager.getActiveNetworkInfo();
         }
-
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
     }
+
+
 }

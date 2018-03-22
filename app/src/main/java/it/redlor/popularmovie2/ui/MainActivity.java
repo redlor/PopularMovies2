@@ -55,7 +55,11 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     private static final String SPINNER_SELECTION = "spinnerSelection";
     private static final String RECYCLER_VIEW_STATE = "rvState";
     private static final String SEARCH_QUERY = "query";
-    private static final String SEARCH_LIST = "list";
+
+    private static final int MOST_POPULAR = 0;
+    private static final int TOP_RATED = 1;
+    private static final int FAVOURITES = 2;
+    private static final int SEARCH_MODE = 3;
 
     // Declare a variable to check if in Dual Pane mode
     public static boolean mTwoPane;
@@ -65,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
     private Handler mHandler;
     private SearchView mActionSearchView;
     private MenuItem mActionSearchMenuItem;
-    private ArrayList<ResultMovie> mSearchSavedList;
 
     MovieRecyclerAdapter mAdapter;
     private GridLayoutManager mGridLayoutManager;
@@ -110,15 +113,12 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                 .get(MoviesListViewModel.class);
 
         mHandler = new Handler();
-        mSearchSavedList = new ArrayList<ResultMovie>();
 
-        // Restore the position of scrolling, the query in the SearchView and the list if in Search Mode
+        // Restore the position of scrolling, the query in the SearchView
         if (savedInstanceState != null) {
             mListState = savedInstanceState.getParcelable(RECYCLER_VIEW_STATE);
             mQuery = savedInstanceState.getString(SEARCH_QUERY);
-            mSearchSavedList = savedInstanceState.getParcelableArrayList(SEARCH_LIST);
         }
-
 
         // Initialize Spinner
         mSpinnerList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.sort_movies)));
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
             @Override
             public boolean isEnabled(int position) {
                 // Disable Search Mode option since it is not intended to be clicked
-                if (position == 3) {
+                if (position == SEARCH_MODE) {
                     return false;
                 } else {
                     return true;
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
             public View getDropDownView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
                 View spinnerView = super.getDropDownView(position, convertView, parent);
                 TextView spinnerTextView = (TextView) spinnerView;
-                if (position == 3) {
+                if (position == SEARCH_MODE) {
                     //Set the disabled spinner item color fade .
                     spinnerTextView.setTextColor(getResources().getColor(R.color.inactive_spinner_item));
                 } else {
@@ -154,19 +154,13 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         SharedPreferences sharedPreferences = getPreferences(0);
         mActivityMainBinding.spinner.setSelection(sharedPreferences.getInt(SPINNER_SELECTION, 0));
 
-        // If the last visited tab was Search Mode, with this check we open the first tab when launching the app
-        // and then set the last visited from SharedPreferences
-        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
-            mActivityMainBinding.spinner.setSelection(0);
-        }
-
         // Defining the spinner items behavior
         mActivityMainBinding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 switch (i) {
-                    case 0:
+                    case MOST_POPULAR:
                         if (internetAvailable()) {
                             setOnlineUI();
                             mViewModel.getMostPopularMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList ->
@@ -177,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                         retainSortOrder();
 
                         break;
-                    case 1:
+                    case TOP_RATED:
                         if (internetAvailable()) {
                             setOnlineUI();
                             mViewModel.getTopRatedMoviesList(getContentResolver()).observe(MainActivity.this, mMoviesList ->
@@ -187,12 +181,12 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
                         }
                         retainSortOrder();
                         break;
-                    case 2:
+                    case FAVOURITES:
                         refreshFavourites();
                         retainSortOrder();
                         break;
-                    case 3:
-                        processResponse(mSearchSavedList);
+                    case SEARCH_MODE:
+                        retainSortOrder();
                 }
             }
             @Override
@@ -247,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         mActivityMainBinding.noInternetImage.setVisibility(View.VISIBLE);
         mActivityMainBinding.noInternetText.setVisibility(View.VISIBLE);
         // Shows a text if no favourites movie in the DB yet
-        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == FAVOURITES) {
             mActivityMainBinding.noInternetImage.setVisibility(View.INVISIBLE);
             mActivityMainBinding.noInternetText.setText(getResources().getString(R.string.no_favourites));
         } else {
@@ -310,6 +304,11 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
             public boolean onQueryTextSubmit(String query) {
                 // Save the query in a global variable in order to restore it on orientation change
                 mQuery = query;
+                // Save the string also in SharedPreferences so when the app is opened again the last
+                // search is shown
+                SharedPreferences.Editor editor = getPreferences(0).edit();
+                editor.putString(SEARCH_QUERY, mQuery);
+                editor.apply();
                 searchMovie(query);
                 return false;
             }
@@ -366,11 +365,10 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
 
     // Search method to search for movies by title.Defined in the ViewModel
     private void searchMovie(String query) {
-        mActivityMainBinding.spinner.setSelection(3);
+        mActivityMainBinding.spinner.setSelection(SEARCH_MODE);
         mViewModel.getSearchedMovie(getContentResolver(), query).observe(MainActivity.this, mMoviesList -> {
             // Since the Search Mode is not selectable but it is re-triggered on orientation change if active, I save the list in
             // a global variable to restore it
-            mSearchSavedList = mMoviesList;
             processResponse(mMoviesList);} );
     }
 
@@ -379,20 +377,27 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         return fragmentDispatchingAndroidInjector;
     }
 
+
     @Override
     protected void onResume() {
         super.onResume();
+
         // I need to refresh the Favourites onResume otherwise it won't show the change
         // if a movie was removed from Favourites
-        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
+        if (mActivityMainBinding.spinner.getSelectedItemPosition() == FAVOURITES) {
                 refreshFavourites();
+          // Retrieve the last query when coming back from Details or when reopening the app
+        } else if (mActivityMainBinding.spinner.getSelectedItemPosition() == SEARCH_MODE) {
+            SharedPreferences sharedPreferences = getPreferences(0);
+            String query = sharedPreferences.getString(SEARCH_QUERY, "");
+            searchMovie(query);
         }
     }
 
-    // Set the empty state if no favourites in the database, otherwise sho the list
+    // Set the empty state if no favourites in the database, otherwise show the list
     private void refreshFavourites() {
         mViewModel.getFavourites(getContentResolver()).observe(MainActivity.this, mMoviesList -> {
-            if (mMoviesList.size() == 0 && mActivityMainBinding.spinner.getSelectedItemPosition() == 2) {
+            if (mMoviesList.size() == 0 && mActivityMainBinding.spinner.getSelectedItemPosition() == FAVOURITES) {
                 setOfflineUI();
             } else {
                 setOnlineUI();
@@ -407,11 +412,8 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         if (mGridLayoutManager != null) {
             outState.putParcelable(RECYCLER_VIEW_STATE, mGridLayoutManager.onSaveInstanceState());
         }
-        // If the user is in Search Mode when rotating, save the list
-        if (mActivityMainBinding.spinner.getSelectedItemPosition() == 3) {
-            outState.putParcelableArrayList(SEARCH_LIST, mSearchSavedList);
-        }
         outState.putString(SEARCH_QUERY, mQuery);
         super.onSaveInstanceState(outState);
     }
+
 }
