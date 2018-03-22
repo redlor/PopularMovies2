@@ -416,11 +416,4 @@ public class MainActivity extends AppCompatActivity implements MovieClickCallbac
         super.onSaveInstanceState(outState);
     }
 
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if(savedInstanceState != null) {
-            mGridLayoutManager.onRestoreInstanceState(mListState);
-        }
-    }
 }

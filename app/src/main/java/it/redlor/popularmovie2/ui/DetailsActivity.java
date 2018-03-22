@@ -66,4 +66,8 @@ public class DetailsActivity extends AppCompatActivity implements HasSupportFrag
                 return super.onOptionsItemSelected(item);
         }
     }*/
+
+
+    @Override
+    public void onBackPressed() {}
 }
