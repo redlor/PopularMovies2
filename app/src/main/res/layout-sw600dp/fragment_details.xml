@@ -63,7 +63,8 @@
                     android:background="#ccc"
                     app:layout_constraintBottom_toBottomOf="@+id/rating_label"
                     app:layout_constraintEnd_toStartOf="@+id/rating_text_view"
-                    app:layout_constraintTop_toTopOf="@id/rating_text_view" />
+                    app:layout_constraintTop_toTopOf="@id/rating_text_view"
+                    android:layout_marginRight="16dp" />
 
                 <TextView
                     android:id="@+id/rating_text_view"
@@ -114,7 +115,8 @@
                     android:textSize="@dimen/text_size_big"
                     app:layout_constraintStart_toEndOf="@+id/divider_1"
                     app:layout_constraintTop_toTopOf="@+id/rating_text_view"
-                    tools:text="2018-10-10" />
+                    tools:text="2018-10-10"
+                    android:layout_marginLeft="8dp" />
 
                 <TextView
                     android:id="@+id/release_date_label"

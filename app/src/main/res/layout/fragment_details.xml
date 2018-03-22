@@ -13,11 +13,11 @@
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_height="wrap_content"
+        android:background="@android:color/black">
 
         <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraint_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -63,7 +63,8 @@
                     android:background="#ccc"
                     app:layout_constraintBottom_toBottomOf="@+id/rating_label"
                     app:layout_constraintEnd_toStartOf="@+id/rating_text_view"
-                    app:layout_constraintTop_toTopOf="@id/rating_text_view" />
+                    app:layout_constraintTop_toTopOf="@id/rating_text_view"
+                    android:layout_marginRight="16dp" />
 
                 <TextView
                     android:id="@+id/rating_text_view"
@@ -100,7 +101,8 @@
                     android:background="#ccc"
                     app:layout_constraintBottom_toBottomOf="@+id/release_date_label"
                     app:layout_constraintStart_toEndOf="@+id/rating_text_view"
-                    app:layout_constraintTop_toTopOf="@+id/rating_text_view" />
+                    app:layout_constraintTop_toTopOf="@+id/rating_text_view"
+                    android:layout_marginLeft="16dp" />
 
                 <TextView
                     android:id="@+id/release_date_tv"
@@ -114,7 +116,8 @@
                     app:release_date="@{movieViewModel.resultMovie.releaseDate}"
                     app:layout_constraintStart_toEndOf="@+id/divider_1"
                     app:layout_constraintTop_toTopOf="@+id/rating_text_view"
-                    tools:text="2018-10-10" />
+                    tools:text="2018-10-10"
+                    android:layout_marginLeft="8dp" />
 
                 <TextView
                     android:id="@+id/release_date_label"
@@ -152,7 +155,7 @@
                     android:layout_marginTop="8dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/plot_synopsis_text_view"></android.support.v7.widget.RecyclerView>
+                    app:layout_constraintTop_toBottomOf="@+id/plot_synopsis_text_view"/>
 
                 <TextView
                     android:id="@+id/reviews_label_Tv"
